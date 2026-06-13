@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+// Public URL of the deployed site, used to turn relative social-share image
+// paths into absolute URLs. Defaults to the GitHub Pages address.
+const SITE_URL = "https://itemiral.github.io/chychkan-real/";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Touristic Complex Chychkan — Mountain Lodge, Kyrgyzstan",
   description:
     "Luxury mountain retreat in Chychkan Gorge, 240 km from Bishkek. Horseback riding, trekking, authentic cuisine. Open May–September. Book via WhatsApp.",
@@ -9,7 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Touristic Complex Chychkan",
     description: "Mountain lodge in the Chychkan Gorge, Kyrgyzstan. 2200m altitude. Open May–September.",
-    images: ["/kyrgyzstan-bg.jpg"],
+    images: ["kyrgyzstan-bg.jpg"],
     type: "website",
   },
 };
