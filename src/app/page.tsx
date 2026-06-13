@@ -183,7 +183,7 @@ const ROOMS: {
     key:'summer',  usd:'$85',  kgs:'7 500', tier:'premium', img:'/summer4.jpg',
     gallery: {
       images: ['/summer4.jpg', '/summer1.jpg', '/summer2.jpg', '/summer3.jpg'],
-      video: '/summer-video.mov',
+      video: '/summer-video.mp4',
     },
   },
   { key:'lux',     usd:'$100', kgs:'8 800', tier:'premium', img:'/room-lux.jpg',     gallery: null },
@@ -506,7 +506,7 @@ export default function Page() {
 
         {/* Background image */}
         <div className="absolute inset-0 hero-bg"
-          style={{ backgroundImage:`url('${asset('/hero-bg.png')}')`,
+          style={{ backgroundImage:`url('${asset('/hero-bg.webp')}')`,
             backgroundSize:'cover', backgroundPosition:'center' }} />
 
         {/* Gradient overlays */}
