@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect, useRef } from 'react';
 import {
   UtensilsCrossed, Droplets, Mountain, Fish, Leaf,
@@ -214,11 +212,10 @@ const ACTS = [
 
 const WA = 'https://wa.me/message/SNUKLEBLJCCNB1';
 
-// On a GitHub Pages project site the app is served from a sub-path. Next.js
-// rewrites <Link>/next-image URLs for `basePath`, but NOT raw <img>/<video>
-// `src` or CSS `url()` backgrounds — so prefix those manually.
-const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
-const asset = (p: string) => `${BASE}${p}`;
+// On a GitHub Pages project site the app is served from a sub-path. Vite exposes
+// it as `import.meta.env.BASE_URL` (e.g. '/chychkan-real/'), which already has a
+// trailing slash — so strip the leading slash off asset paths before joining.
+const asset = (p: string) => import.meta.env.BASE_URL + p.replace(/^\//, '');
 
 // ── SECTION LABEL ─────────────────────────────────────────────
 function SectionLabel({ text }: { text: string }) {
@@ -293,7 +290,6 @@ function Lightbox({ gallery, name, onClose }: { gallery: GalleryData; name: stri
               style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
             />
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={asset(gallery.images[idx])}
               alt={`${name} ${idx + 1}`}
@@ -695,7 +691,6 @@ export default function Page() {
                       {room.gallery.images.length + 1} photos
                     </div>
                   )}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={asset(room.img)} alt={tr[room.key]}
                     style={{ width:'100%', height:'auto', display:'block', transition:'transform 0.6s' }}
                     loading="lazy"

@@ -1,5 +1,9 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+# Agent notes
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
+Vite + React 19 + Tailwind CSS 4 single-page static site. The entire UI is in
+`src/app/page.tsx` (mounted by `src/main.tsx`). No router, no backend, no SSR.
+
+- Reference public assets through the `asset()` helper in `page.tsx` so the
+  GitHub Pages base path (`import.meta.env.BASE_URL`) is applied — never hardcode
+  `/foo.png`.
+- Build with `npm run build` (output → `dist/`); preview with `npm run preview`.

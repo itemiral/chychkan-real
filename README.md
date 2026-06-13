@@ -5,24 +5,34 @@ spa, tours, and trekking. Trilingual (ky / ru / en).
 
 ## Stack
 
-- **Next.js 16** (static export — `output: "export"`)
-- **React 19**, **Tailwind CSS 4**, **Framer Motion**
+- **Vite + React 19** (single static page)
+- **Tailwind CSS 4** (via `@tailwindcss/vite`), **lucide-react** icons
 - Deployed to **GitHub Pages** via `.github/workflows/deploy.yml`
 
-The whole landing page lives in `src/app/page.tsx`.
+The whole landing page lives in `src/app/page.tsx`; `src/main.tsx` mounts it.
 
 ## Develop
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000
+npm run dev        # http://localhost:5173
 ```
 
 ## Build
 
 ```bash
-npm run build    # static site emitted to ./out
+npm run build      # static site emitted to ./dist
+npm run preview    # serve the built ./dist locally
 ```
 
-Because it's a static export there is no server runtime — booking is handled
-client-side (WhatsApp deep link / form-as-a-service).
+### GitHub Pages base path
+
+The project site is served from a sub-path (`/chychkan-real/`). The deploy
+workflow sets `VITE_BASE=/chychkan-real/` so asset URLs resolve correctly;
+locally it defaults to `/`. Asset paths in code go through the `asset()` helper
+in `page.tsx`, which prefixes `import.meta.env.BASE_URL`.
+
+## Booking
+
+Static site, no server runtime — booking is handled client-side (WhatsApp deep
+link; an email-form fallback can be added via a form service).

@@ -29,18 +29,19 @@ jobs:
 
       - run: npm ci
 
-      - name: Build static export
+      - name: Build static site
         run: npm run build
         env:
-          # Repo name == sub-path the project site is served from.
-          NEXT_PUBLIC_BASE_PATH: /chychkan-real
+          # Repo name == sub-path the project site is served from. Trailing
+          # slash required by Vite's `base`.
+          VITE_BASE: /chychkan-real/
 
-      # Stop GitHub Pages' Jekyll from dropping the _next/ folder.
-      - run: touch out/.nojekyll
+      # Stop GitHub Pages' Jekyll from dropping asset folders.
+      - run: touch dist/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: out
+          path: dist
 
   deploy:
     needs: build
