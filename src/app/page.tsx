@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type FormEvent, type CSSProperties } from 'react';
 import {
   UtensilsCrossed, Droplets, Mountain, Fish, Leaf,
   Flame, Car, Coffee, Wifi, Clock, Compass, MapPin,
@@ -70,6 +70,12 @@ const T: Record<Lang, Record<string, string>> = {
     cta_label:'Брондоо', cta_title:'Сизди Чычканда күтүп жатабыз',
     cta_italic:'Тоонун жаны, табигаттын кучагы',
     cta_btn:'WhatsApp аркылуу брондоо',
+    form_or:'Же брондоо өтүнүчүн жөнөтүңүз', form_name:'Атыңыз', form_contact:'Email же телефон',
+    form_checkin:'Кирүү', form_checkout:'Чыгуу', form_guests:'Конок', form_room:'Бөлмө түрү',
+    form_room_any:'Маанилүү эмес', form_msg:'Билдирүү (милдеттүү эмес)',
+    form_submit:'Өтүнүч жөнөтүү', form_sending:'Жөнөтүлүүдө…',
+    form_success:'Рахмат! Өтүнүчүңүз кабыл алынды, тез арада жооп беребиз.',
+    form_error:'Бир нерсе туура эмес болду. WhatsApp аркылуу жазыңыз.',
     ig:'Instagram',
     foot_open:'Ачык: 1 Май — 30 Сентябрь',
     foot_copy:'© 2025 Touristic Complex Chychkan',
@@ -115,6 +121,12 @@ const T: Record<Lang, Record<string, string>> = {
     cta_label:'Бронирование', cta_title:'Ждём вас в Чычкане',
     cta_italic:'Душа гор, объятия природы',
     cta_btn:'Забронировать в WhatsApp',
+    form_or:'Или отправьте заявку на бронь', form_name:'Имя', form_contact:'Email или телефон',
+    form_checkin:'Заезд', form_checkout:'Выезд', form_guests:'Гостей', form_room:'Тип номера',
+    form_room_any:'Не важно', form_msg:'Сообщение (необязательно)',
+    form_submit:'Отправить заявку', form_sending:'Отправка…',
+    form_success:'Спасибо! Заявка получена, скоро ответим.',
+    form_error:'Что-то пошло не так. Напишите нам в WhatsApp.',
     ig:'Instagram',
     foot_open:'Открыт: 1 Мая — 30 Сентября',
     foot_copy:'© 2025 Туристический комплекс Чычкан',
@@ -160,6 +172,12 @@ const T: Record<Lang, Record<string, string>> = {
     cta_label:'Book Your Stay', cta_title:"We're waiting for you",
     cta_italic:"Mountain soul, nature's embrace",
     cta_btn:'Book via WhatsApp',
+    form_or:'Or send a booking request', form_name:'Full name', form_contact:'Email or phone',
+    form_checkin:'Check-in', form_checkout:'Check-out', form_guests:'Guests', form_room:'Room type',
+    form_room_any:'No preference', form_msg:'Message (optional)',
+    form_submit:'Send request', form_sending:'Sending…',
+    form_success:'Thanks! We received your request and will reply soon.',
+    form_error:'Something went wrong. Please WhatsApp us instead.',
     ig:'Instagram',
     foot_open:'Open: May 1 — September 30',
     foot_copy:'© 2025 Touristic Complex Chychkan',
@@ -211,6 +229,12 @@ const ACTS = [
 ];
 
 const WA = 'https://wa.me/message/SNUKLEBLJCCNB1';
+
+// Web3Forms relays the booking form to email with no backend of our own.
+// Get a free access key at https://web3forms.com (enter the inbox address,
+// they email the key instantly — no account needed).
+// TODO: replace this placeholder with the real key before going live.
+const WEB3FORMS_KEY = 'YOUR_WEB3FORMS_ACCESS_KEY';
 
 // On a GitHub Pages project site the app is served from a sub-path. Vite exposes
 // it as `import.meta.env.BASE_URL` (e.g. '/chychkan-real/'), which already has a
@@ -344,6 +368,115 @@ function Lightbox({ gallery, name, onClose }: { gallery: GalleryData; name: stri
         />
       </div>
     </div>
+  );
+}
+
+// ── BOOKING REQUEST FORM (Web3Forms — no backend) ─────────────
+function BookingForm({ tr }: { tr: Record<string, string> }) {
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+
+  const labelStyle: CSSProperties = {
+    fontFamily: F.sans, fontSize: '0.58rem', fontWeight: 600, letterSpacing: '0.12em',
+    textTransform: 'uppercase', color: 'rgba(247,242,232,0.55)', marginBottom: '0.35rem',
+    display: 'block', textAlign: 'left',
+  };
+  const fieldStyle: CSSProperties = {
+    fontFamily: F.sans, fontSize: '0.9rem', color: C.cream, width: '100%',
+    background: 'rgba(247,242,232,0.06)', border: '1px solid rgba(247,242,232,0.22)',
+    borderRadius: 2, padding: '0.7rem 0.8rem', outline: 'none',
+  };
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setStatus('sending');
+    const form = e.currentTarget;
+    const data = Object.fromEntries(new FormData(form).entries());
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: 'New booking request — Chychkan',
+          ...data,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) { setStatus('success'); form.reset(); }
+      else setStatus('error');
+    } catch {
+      setStatus('error');
+    }
+  }
+
+  if (status === 'success') {
+    return (
+      <p style={{ fontFamily: F.serif, fontStyle: 'italic', fontSize: '1.15rem',
+        color: C.goldL, padding: '2rem 0', margin: 0 }}>
+        {tr.form_success}
+      </p>
+    );
+  }
+
+  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <label style={{ display: 'block' }}>
+      <span style={labelStyle}>{label}</span>
+      {children}
+    </label>
+  );
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '0.85rem', textAlign: 'left' }}>
+      {/* Honeypot — Web3Forms drops submissions where this is filled. */}
+      <input type="checkbox" name="botcheck" tabIndex={-1} autoComplete="off"
+        style={{ display: 'none' }} />
+
+      <Field label={tr.form_name}>
+        <input name="name" required autoComplete="name" style={fieldStyle} />
+      </Field>
+      <Field label={tr.form_contact}>
+        <input name="contact" required autoComplete="email" style={fieldStyle} />
+      </Field>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.6rem' }}>
+        <Field label={tr.form_checkin}>
+          <input name="check_in" type="date" required style={fieldStyle} />
+        </Field>
+        <Field label={tr.form_checkout}>
+          <input name="check_out" type="date" required style={fieldStyle} />
+        </Field>
+        <Field label={tr.form_guests}>
+          <input name="guests" type="number" min={1} defaultValue={2} required style={fieldStyle} />
+        </Field>
+      </div>
+
+      <Field label={tr.form_room}>
+        <select name="room" defaultValue="" style={fieldStyle}>
+          <option value="">{tr.form_room_any}</option>
+          {ROOMS.map(r => (
+            <option key={r.key} value={tr[r.key]}>{tr[r.key]}</option>
+          ))}
+        </select>
+      </Field>
+
+      <Field label={tr.form_msg}>
+        <textarea name="message" rows={3} style={{ ...fieldStyle, resize: 'vertical' }} />
+      </Field>
+
+      <button type="submit" disabled={status === 'sending'}
+        style={{ fontFamily: F.sans, background: C.gold, color: C.deep, fontSize: '0.65rem',
+          fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', border: 'none',
+          padding: '1rem 2rem', cursor: status === 'sending' ? 'wait' : 'pointer',
+          opacity: status === 'sending' ? 0.7 : 1, transition: 'opacity 0.2s', minHeight: 48 }}>
+        {status === 'sending' ? tr.form_sending : tr.form_submit}
+      </button>
+
+      {status === 'error' && (
+        <p style={{ fontFamily: F.sans, fontSize: '0.8rem', color: '#E8A0A0', margin: 0 }}>
+          {tr.form_error}
+        </p>
+      )}
+    </form>
   );
 }
 
@@ -946,6 +1079,20 @@ export default function Page() {
             >
               @chychkan.tourism
             </a>
+          </div>
+
+          {/* Divider + email-form fallback */}
+          <div className="reveal reveal-delay-3" style={{ display:'flex', alignItems:'center',
+            gap:'1rem', maxWidth:380, margin:'3rem auto 1.5rem' }}>
+            <span style={{ flex:1, height:1, background:'rgba(247,242,232,0.18)' }} />
+            <span style={{ fontFamily:F.sans, fontSize:'0.58rem', fontWeight:600,
+              letterSpacing:'0.15em', textTransform:'uppercase', color:'rgba(247,242,232,0.5)' }}>
+              {tr.form_or}
+            </span>
+            <span style={{ flex:1, height:1, background:'rgba(247,242,232,0.18)' }} />
+          </div>
+          <div className="reveal reveal-delay-3" style={{ maxWidth:380, margin:'0 auto' }}>
+            <BookingForm tr={tr} />
           </div>
         </div>
       </section>
