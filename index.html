@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="/favicon.ico" />
+    <meta name="theme-color" content="#0F2318" />
+    <link rel="icon" href="%BASE_URL%favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="%BASE_URL%favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
+    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
 
     <title>Touristic Complex Chychkan — Mountain Lodge, Kyrgyzstan</title>
     <meta
@@ -23,9 +27,42 @@
     />
     <meta
       property="og:image"
-      content="https://itemiral.github.io/chychkan-real/kyrgyzstan-bg.jpg"
+      content="https://itemiral.github.io/chychkan-real/og.png"
     />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://itemiral.github.io/chychkan-real/" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Structured data for search engines -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LodgingBusiness",
+        "name": "Touristic Complex Chychkan",
+        "description": "Family mountain lodge in the Chychkan Gorge at 2200m on the Bishkek–Osh highway, Kyrgyzstan. Rooms, yurts, café-restaurant, sauna, horseback riding and trekking. Open May–September.",
+        "url": "https://itemiral.github.io/chychkan-real/",
+        "image": "https://itemiral.github.io/chychkan-real/og.png",
+        "priceRange": "$15–$100",
+        "currenciesAccepted": "KGS, USD",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "KG",
+          "addressRegion": "Jalal-Abad Region",
+          "streetAddress": "Bishkek–Osh highway (M41), Chychkan Gorge"
+        },
+        "geo": { "@type": "GeoCoordinates", "latitude": 42.05, "longitude": 72.85 },
+        "sameAs": ["https://instagram.com/chychkan.tourism"],
+        "amenityFeature": [
+          { "@type": "LocationFeatureSpecification", "name": "Free Wi-Fi", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Free parking", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Breakfast included", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Restaurant", "value": true },
+          { "@type": "LocationFeatureSpecification", "name": "Sauna", "value": true }
+        ]
+      }
+    </script>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
