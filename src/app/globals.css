@@ -122,9 +122,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Anchor scrolling is handled by Lenis (smooth inertia scroll); the CSS
+     `scroll-behavior: smooth` rule conflicts with it and must stay off. */
   html {
     @apply font-sans;
-    scroll-behavior: smooth;
   }
 }
 
@@ -175,6 +176,14 @@
   animation: marquee 32s linear infinite;
 }
 
+/* ── Gallery film strip ── */
+.gallery-track {
+  animation: marquee 55s linear infinite;
+}
+.gallery-track:hover {
+  animation-play-state: paused;
+}
+
 /* ── Route line draw (Location timeline) ── */
 .route-draw {
   transform: scaleY(0);
@@ -186,7 +195,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-bg, .fade-up, .reveal, .marquee-track, .route-draw {
+  .hero-bg, .fade-up, .reveal, .marquee-track, .gallery-track, .route-draw {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

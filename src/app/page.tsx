@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { motion, useScroll, useTransform, useReducedMotion } from 'motion/react';
+import Lenis from 'lenis';
 import {
   UtensilsCrossed, Droplets, Mountain, Fish, Leaf,
   Flame, Car, Coffee, Wifi, Clock, Compass, MapPin,
-  ArrowRight, Menu, X, ChevronLeft, ChevronRight, Play,
+  ArrowRight, Menu, X, ChevronLeft, ChevronRight, Play, Plus,
 } from 'lucide-react';
 
 // ── TYPES ─────────────────────────────────────────────────────
@@ -30,9 +32,9 @@ const F = {
 // ── TRANSLATIONS ──────────────────────────────────────────────
 const T: Record<Lang, Record<string, string>> = {
   ky: {
-    nav_about:'Жөнүндө', nav_rooms:'Бөлмөлөр', nav_act:'Активдүүлүк',
+    nav_about:'Жөнүндө', nav_rooms:'Бөлмөлөр', nav_rest:'Ресторан', nav_act:'Активдүүлүк',
     nav_loc:'Жайгашкан жер', nav_book:'Брондоо',
-    season:'Сезон: 1-май — 30-сентябрь · 2025',
+    season:'Сезон: 1-май — 30-сентябрь',
     h1:'Чычкан', h2:'Капчыгайы',
     tagline:'Бишкектен 240 км · 2200м · 2012-жылдан берки',
     cta:'WhatsApp аркылуу брондоо',
@@ -60,6 +62,23 @@ const T: Record<Lang, Record<string, string>> = {
     a9:'Эртең мен тамагы', a9d:'B&B — баардык бөлмөгө кирет',
     a10:'Акысыз Wi-Fi', a10d:'Бүткүл комплекс боюнча',
     a11:'24 саат ресепшн', a11d:'Тынымсыз администратор',
+    rest_label:'Даамдар', rest_title:'Кафе-Ресторан',
+    rest_sub:'Кыргыз жана Азия ашканасы — тоо абасында',
+    rest_note:'Меню сезонго жараша өзгөрөт',
+    r1:'Бешбармак', r1d:'Улуттук даам — үй кесмеси жана эт',
+    r2:'Тоо форели', r2d:'Тоо дарыяларынын таза балыгы',
+    r3:'Самсы', r3d:'Тандырдан жаңы чыккан',
+    r4:'Шашлык', r4d:'Чокто бышырылган эт',
+    r5:'Боорсок жана чай', r5d:'Каймак жана варенье менен',
+    r6:'Кымыз', r6d:'Жайкы сезондо — жайлоодон',
+    faq_label:'Суроолор', faq_title:'Көп берилүүчү суроолор',
+    f1:'Качан ачыксыздар?', f1a:'Ар жылы 1-майдан 30-сентябрга чейин иштейбиз. Кышында комплекс жабык.',
+    f2:'Кантип брондоо керек?', f2a:'WhatsApp аркылуу жазыңыз — датаны, бөлмө түрүн жана конок санын көрсөтүңүз. Тез арада жооп беребиз.',
+    f3:'Эртең мененки тамак киреби?', f3a:'Ооба, бардык бөлмөлөрдүн баасына эртең мененки тамак (B&B) кирет.',
+    f4:'Кантип жетебиз?', f4a:'Бишкек-Ош трассасы (М41) менен, Ала-Бел ашуусунан кийин 40–50 км. Бишкектен болжол менен 3–3.5 саат.',
+    f5:'Wi-Fi жана токтоочу жай барбы?', f5a:'Ооба, бүткүл аймакта акысыз Wi-Fi жана бардык конокторго акысыз токтоочу жай бар.',
+    f6:'Үй-бүлө менен келсе болобу?', f6a:'Албетте! Үй-бүлөлүк бөлмөлөр, эко үй жана балдар үчүн кенен аянт бар.',
+    gal_label:'Галерея', gal_title:'Тоолордогу учурлар',
     loc_label:'Жайгашкан жери', loc_title:'Бизди кантип табуу',
     loc_sub:'Бишкек-Ош автожолу, Ала-Бел ашуусунан кийин',
     d1t:'Бишкектен чыгуу', d1b:'Бишкек-Ош автожолуна (М41) түшүп, Ош багытына жүрүңүз.',
@@ -72,12 +91,12 @@ const T: Record<Lang, Record<string, string>> = {
     cta_btn:'WhatsApp аркылуу брондоо',
     ig:'Instagram',
     foot_open:'Ачык: 1 Май — 30 Сентябрь',
-    foot_copy:'© 2025 Touristic Complex Chychkan',
+    foot_copy:'Touristic Complex Chychkan',
   },
   ru: {
-    nav_about:'О нас', nav_rooms:'Номера', nav_act:'Активности',
+    nav_about:'О нас', nav_rooms:'Номера', nav_rest:'Ресторан', nav_act:'Активности',
     nav_loc:'Расположение', nav_book:'Бронирование',
-    season:'Сезон: 1 мая — 30 сентября · 2025',
+    season:'Сезон: 1 мая — 30 сентября',
     h1:'Ущелье', h2:'Чычкан',
     tagline:'240 км от Бишкека · 2200м · С 2012 года',
     cta:'Забронировать в WhatsApp',
@@ -105,6 +124,23 @@ const T: Record<Lang, Record<string, string>> = {
     a9:'Завтрак', a9d:'B&B — включён во все номера',
     a10:'Бесплатный Wi-Fi', a10d:'По всей территории',
     a11:'Круглосуточная рецепция', a11d:'Администратор всегда на месте',
+    rest_label:'Кухня', rest_title:'Кафе-Ресторан',
+    rest_sub:'Кыргызская и азиатская кухня на горном воздухе',
+    rest_note:'Меню меняется по сезону',
+    r1:'Бешбармак', r1d:'Национальное блюдо — домашняя лапша и мясо',
+    r2:'Горная форель', r2d:'Свежая рыба из горных рек',
+    r3:'Самсы', r3d:'Прямо из тандыра',
+    r4:'Шашлык', r4d:'Мясо на углях',
+    r5:'Боорсоки и чай', r5d:'Со сливками и вареньем',
+    r6:'Кымыз', r6d:'Летом — с джайлоо',
+    faq_label:'Вопросы', faq_title:'Частые вопросы',
+    f1:'Когда вы открыты?', f1a:'Работаем каждый год с 1 мая по 30 сентября. Зимой комплекс закрыт.',
+    f2:'Как забронировать?', f2a:'Напишите нам в WhatsApp — укажите даты, тип номера и число гостей. Ответим быстро.',
+    f3:'Завтрак включён?', f3a:'Да, завтрак (B&B) включён в стоимость всех номеров.',
+    f4:'Как доехать?', f4a:'По трассе Бишкек–Ош (М41), 40–50 км после перевала Ала-Бел. Из Бишкека — примерно 3–3.5 часа.',
+    f5:'Есть Wi-Fi и парковка?', f5a:'Да, бесплатный Wi-Fi по всей территории и бесплатная парковка для всех гостей.',
+    f6:'Можно с семьёй?', f6a:'Конечно! Есть семейные номера, эко-домик и много места для детей.',
+    gal_label:'Галерея', gal_title:'Моменты в горах',
     loc_label:'Расположение', loc_title:'Как нас найти',
     loc_sub:'Трасса Бишкек–Ош, после перевала Ала-Бел',
     d1t:'Выезд из Бишкека', d1b:'Выезжайте на трассу Бишкек–Ош (М41) в направлении Оша.',
@@ -117,12 +153,12 @@ const T: Record<Lang, Record<string, string>> = {
     cta_btn:'Забронировать в WhatsApp',
     ig:'Instagram',
     foot_open:'Открыт: 1 Мая — 30 Сентября',
-    foot_copy:'© 2025 Туристический комплекс Чычкан',
+    foot_copy:'Туристический комплекс Чычкан',
   },
   en: {
-    nav_about:'About', nav_rooms:'Rooms', nav_act:'Activities',
+    nav_about:'About', nav_rooms:'Rooms', nav_rest:'Restaurant', nav_act:'Activities',
     nav_loc:'Location', nav_book:'Book',
-    season:'Season: May 1 — September 30 · 2025',
+    season:'Season: May 1 — September 30',
     h1:'Chychkan', h2:'Gorge',
     tagline:'240 km from Bishkek · 2,200m altitude · Est. 2012',
     cta:'Book via WhatsApp',
@@ -150,6 +186,23 @@ const T: Record<Lang, Record<string, string>> = {
     a9:'Breakfast', a9d:'B&B — included in all rooms',
     a10:'Free Wi-Fi', a10d:'Across the entire complex',
     a11:'24h Reception', a11d:'Always someone at the desk',
+    rest_label:'The Table', rest_title:'Café-Restaurant',
+    rest_sub:'Kyrgyz and Asian cuisine in the mountain air',
+    rest_note:'The menu follows the season',
+    r1:'Beshbarmak', r1d:'The national dish — hand-cut noodles and meat',
+    r2:'Mountain Trout', r2d:'Fresh fish from the gorge rivers',
+    r3:'Samsa', r3d:'Straight from the tandyr oven',
+    r4:'Shashlik', r4d:'Charcoal-grilled skewers',
+    r5:'Boorsok & Tea', r5d:'With cream and preserves',
+    r6:'Kymyz', r6d:'In summer — from the high pastures',
+    faq_label:'Questions', faq_title:'Frequently asked',
+    f1:'When are you open?', f1a:'Every year from May 1 to September 30. The complex is closed in winter.',
+    f2:'How do I book?', f2a:'Message us on WhatsApp with your dates, room type and number of guests. We reply quickly.',
+    f3:'Is breakfast included?', f3a:'Yes — breakfast (B&B) is included in every room rate.',
+    f4:'How do we get there?', f4a:'Take the Bishkek–Osh highway (M41); we are 40–50 km past the Ala-Bel pass. Around 3–3.5 hours from Bishkek.',
+    f5:'Is there Wi-Fi and parking?', f5a:'Yes — free Wi-Fi across the complex and free parking for all guests.',
+    f6:'Can we come with family?', f6a:'Of course! We have family rooms, an eco house, and plenty of space for kids.',
+    gal_label:'Gallery', gal_title:'Moments in the mountains',
     loc_label:'Location', loc_title:'How to find us',
     loc_sub:'Bishkek–Osh highway, after the Ala-Bel pass',
     d1t:'Leave Bishkek', d1b:'Take the Bishkek–Osh highway (M41) towards Osh.',
@@ -162,7 +215,7 @@ const T: Record<Lang, Record<string, string>> = {
     cta_btn:'Book via WhatsApp',
     ig:'Instagram',
     foot_open:'Open: May 1 — September 30',
-    foot_copy:'© 2025 Touristic Complex Chychkan',
+    foot_copy:'Touristic Complex Chychkan',
   },
 };
 
@@ -293,6 +346,122 @@ function CountUp({ value, suffix }: { value: number; suffix: string }) {
       fontWeight:600, color:C.forest, lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
       {n}{suffix}
     </strong>
+  );
+}
+
+// ── HERO LETTER (staggered headline reveal) ───────────────────
+const letterVariants = {
+  hidden: { opacity: 0, y: '0.55em', rotateX: 55 },
+  show: {
+    opacity: 1, y: 0, rotateX: 0,
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as const },
+  },
+};
+
+function Letter({ ch }: { ch: string }) {
+  return (
+    <motion.span variants={letterVariants}
+      style={{ display:'inline-block', whiteSpace:'pre', transformOrigin:'bottom', willChange:'transform' }}>
+      {ch}
+    </motion.span>
+  );
+}
+
+// ── 3D TILT CARD ──────────────────────────────────────────────
+function TiltCard({ children, className }: { children: ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [rot, setRot] = useState({ rx: 0, ry: 0 });
+
+  return (
+    <motion.div ref={ref} className={className}
+      onMouseMove={e => {
+        const r = ref.current?.getBoundingClientRect();
+        if (!r) return;
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        setRot({ rx: y * -7, ry: x * 7 });
+      }}
+      onMouseLeave={() => setRot({ rx: 0, ry: 0 })}
+      animate={{ rotateX: rot.rx, rotateY: rot.ry }}
+      whileHover={{ y: -6 }}
+      transition={{ type:'spring', stiffness: 220, damping: 18, mass: 0.6 }}
+      style={{ transformStyle:'preserve-3d' }}>
+      {children}
+    </motion.div>
+  );
+}
+
+// ── LOADING INTRO — brand curtain that lifts to reveal the hero ──
+function Intro({ onReveal }: { onReveal: () => void }) {
+  const [gone, setGone] = useState(false);
+  const reduce = useReducedMotion();
+
+  useEffect(() => {
+    if (reduce) { onReveal(); setGone(true); return; }
+    const t = setTimeout(onReveal, 1500); // hero starts animating as the curtain lifts
+    return () => clearTimeout(t);
+  }, [reduce]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (gone || reduce) return null;
+  return (
+    <motion.div
+      initial={{ y: 0 }} animate={{ y: '-100%' }}
+      transition={{ delay: 1.5, duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
+      onAnimationComplete={() => setGone(true)}
+      style={{ position:'fixed', inset:0, zIndex:300, background:C.deep,
+        display:'flex', flexDirection:'column', alignItems:'center',
+        justifyContent:'center', gap:'1.1rem' }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5, rotate: -90 }}
+        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}>
+        <Tunduk size={64} />
+      </motion.div>
+      <motion.span
+        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45, duration: 0.6 }}
+        style={{ fontFamily:F.serif, fontSize:'1.5rem', fontWeight:500,
+          color:C.cream, letterSpacing:'0.06em' }}>
+        Chychkan
+      </motion.span>
+      <motion.span
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        transition={{ delay: 0.7, duration: 0.6 }}
+        style={{ fontFamily:F.sans, fontSize:'0.55rem', fontWeight:600,
+          letterSpacing:'0.3em', textTransform:'uppercase', color:C.gold }}>
+        Kyrgyzstan · 2200m
+      </motion.span>
+    </motion.div>
+  );
+}
+
+// ── FAQ ITEM ──────────────────────────────────────────────────
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ borderBottom:'1px solid rgba(201,160,82,0.25)' }}>
+      <button onClick={() => setOpen(o => !o)} aria-expanded={open}
+        className="w-full flex items-center justify-between gap-4"
+        style={{ padding:'1.2rem 0', background:'none', border:'none', cursor:'pointer',
+          textAlign:'left' }}>
+        <span style={{ fontFamily:F.serif, fontSize:'1.1rem', fontWeight:500, color:C.deep }}>
+          {q}
+        </span>
+        <motion.span animate={{ rotate: open ? 45 : 0 }} transition={{ duration: 0.25 }}
+          style={{ color:C.gold, flexShrink:0, display:'flex' }}>
+          <Plus size={17} />
+        </motion.span>
+      </button>
+      <motion.div initial={false}
+        animate={{ height: open ? 'auto' : 0, opacity: open ? 1 : 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        style={{ overflow:'hidden' }}>
+        <p style={{ fontFamily:F.sans, fontSize:'0.8rem', fontWeight:300, color:C.muted,
+          lineHeight:1.8, margin:0, paddingBottom:'1.2rem' }}>
+          {a}
+        </p>
+      </motion.div>
+    </div>
   );
 }
 
@@ -432,22 +601,24 @@ export default function Page() {
   const [scrolled, setScrolled]   = useState(false);
   const [menuOpen, setMenuOpen]   = useState(false);
   const [lightbox, setLightbox]   = useState<{ gallery: GalleryData; name: string } | null>(null);
-  const heroParallax = useRef<HTMLDivElement>(null);
-  const progressRef  = useRef<HTMLDivElement>(null);
+  const [introDone, setIntroDone] = useState(false);
   const tr = T[lang];
 
-  // navbar state + scroll progress + hero parallax (direct style writes — no re-render per frame)
+  const reduceMotion = useReducedMotion();
+  const { scrollY, scrollYProgress } = useScroll();
+  // hero background drifts down at quarter speed as you scroll past it
+  const heroY = useTransform(scrollY, [0, 1000], [0, reduceMotion ? 0 : 250]);
+
+  // Lenis inertia scrolling — the whole site glides instead of jumping
   useEffect(() => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const handler = () => {
-      setScrolled(window.scrollY > 60);
-      const doc = document.documentElement;
-      const max = doc.scrollHeight - doc.clientHeight;
-      if (progressRef.current)
-        progressRef.current.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
-      if (!reduceMotion && heroParallax.current && window.scrollY < window.innerHeight * 1.5)
-        heroParallax.current.style.transform = `translateY(${window.scrollY * 0.25}px)`;
-    };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const lenis = new Lenis({ autoRaf: true, anchors: true });
+    return () => lenis.destroy();
+  }, []);
+
+  // navbar scroll state
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 60);
     handler();
     window.addEventListener('scroll', handler, { passive: true });
     return () => window.removeEventListener('scroll', handler);
@@ -467,17 +638,37 @@ export default function Page() {
   const navLinks = [
     { href:'#about',     label: tr.nav_about },
     { href:'#rooms',     label: tr.nav_rooms },
+    { href:'#restaurant',label: tr.nav_rest  },
     { href:'#activities',label: tr.nav_act   },
     { href:'#location',  label: tr.nav_loc   },
   ];
 
   return (
     <>
+      {/* Loading intro curtain */}
+      <Intro onReveal={() => setIntroDone(true)} />
+
       {/* Scroll progress */}
-      <div ref={progressRef} aria-hidden="true"
+      <motion.div aria-hidden="true"
         style={{ position:'fixed', top:0, left:0, right:0, height:2, zIndex:60,
           background:`linear-gradient(to right, ${C.gold}, ${C.goldL})`,
-          transform:'scaleX(0)', transformOrigin:'left' }} />
+          scaleX: scrollYProgress, transformOrigin:'left' }} />
+
+      {/* Floating WhatsApp — appears once the hero is scrolled past */}
+      <motion.a href={WA} target="_blank" rel="noopener noreferrer"
+        aria-label="Chat on WhatsApp"
+        initial={false}
+        animate={{ opacity: scrolled ? 1 : 0, scale: scrolled ? 1 : 0.4 }}
+        transition={{ type:'spring', stiffness: 260, damping: 20 }}
+        style={{ position:'fixed', bottom:'1.4rem', right:'1.4rem', zIndex:45,
+          width:56, height:56, borderRadius:'50%', background:'#25D366',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          boxShadow:'0 8px 28px rgba(0,0,0,0.35)',
+          pointerEvents: scrolled ? 'auto' : 'none' }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+      </motion.a>
 
       {/* Film grain */}
       <div aria-hidden="true"
@@ -607,84 +798,111 @@ export default function Page() {
       {/* ════════════════════════════════════════
           HERO
       ════════════════════════════════════════ */}
-      <section id="hero" className="relative min-h-screen flex flex-col justify-end overflow-hidden"
+      <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden"
         aria-label="Hero section">
 
-        {/* Background image — outer div is scroll-parallaxed, inner keeps the Ken Burns drift.
+        {/* Background — Ken Burns photo, scroll-parallaxed.
             Extended above the viewport so the parallax shift never exposes an edge. */}
-        <div ref={heroParallax} className="absolute inset-0" style={{ willChange:'transform' }}>
+        <motion.div className="absolute inset-0" style={{ y: heroY, willChange:'transform' }}>
           <div className="hero-bg"
-            style={{ position:'absolute', left:0, right:0, top:'-25%', height:'130%',
+            style={{ position:'absolute', left:0, right:0, top:'-20%', height:'125%',
               backgroundImage:`url('${asset('/hero-bg.webp')}')`,
               backgroundSize:'cover', backgroundPosition:'center' }} />
-        </div>
+        </motion.div>
 
-        {/* Gradient overlays */}
+        {/* Gradient overlay */}
         <div className="absolute inset-0"
-          style={{ background:'linear-gradient(to bottom, rgba(10,20,12,0.25) 0%, rgba(10,20,12,0.05) 40%, rgba(10,20,12,0.78) 100%)' }} />
-        <div className="absolute inset-0"
-          style={{ background:'linear-gradient(to right, rgba(10,20,12,0.4) 0%, transparent 65%)' }} />
+          style={{ background:'linear-gradient(to bottom, rgba(10,20,12,0.55) 0%, rgba(10,20,12,0.28) 45%, rgba(10,20,12,0.85) 100%)' }} />
 
-        {/* Content */}
-        <div className="relative z-10 px-6 pb-16 md:px-16 md:pb-24 max-w-4xl">
+        {/* Gold inset frame */}
+        <motion.div aria-hidden="true" className="absolute z-10 pointer-events-none hidden md:block"
+          initial={{ opacity: 0 }} animate={{ opacity: introDone ? 1 : 0 }}
+          transition={{ duration: 1.6, delay: 0.6 }}
+          style={{ inset:'1.4rem', border:'1px solid rgba(201,160,82,0.35)' }} />
+
+        {/* Content — centered ceremony */}
+        <div className="relative z-10 px-6 flex flex-col items-center text-center max-w-5xl mx-auto"
+          style={{ perspective: 900 }}>
+
+          {/* Tunduk crest spins in */}
+          <motion.div
+            initial={{ opacity: 0, rotate: -120, scale: 0.4 }}
+            animate={introDone ? { opacity: 1, rotate: 0, scale: 1 } : {}}
+            transition={{ type:'spring', stiffness: 55, damping: 13, delay: 0.1 }}>
+            <Tunduk size={54} />
+          </motion.div>
 
           {/* Season badge */}
-          <div className="flex items-center gap-2 mb-6 fade-up fade-up-1">
+          <motion.div className="flex items-center gap-2 mt-6 mb-8"
+            initial={{ opacity: 0, y: 14 }} animate={introDone ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.4 }}>
             <span className="w-1.5 h-1.5 rounded-full"
               style={{ background:C.gold, boxShadow:`0 0 6px ${C.gold}`, flexShrink:0,
                 animation:'pulse 2s ease-in-out infinite' }} />
             <span style={{ fontFamily:F.sans, fontSize:'0.6rem', fontWeight:600,
               letterSpacing:'0.25em', textTransform:'uppercase', color:C.goldL }}>
-              {tr.season}
+              {tr.season} · {new Date().getFullYear()}
             </span>
-          </div>
+          </motion.div>
 
-          {/* Headline */}
-          <h1 className="fade-up fade-up-2" style={{ fontFamily:F.serif, lineHeight:0.95,
-            letterSpacing:'-0.03em', color:C.cream, margin:'0 0 1.5rem' }}>
-            <span style={{ display:'block', fontSize:'clamp(4.5rem,13vw,11rem)', fontWeight:500 }}>
-              {tr.h1}
+          {/* Headline — letters rise one by one; replays on language switch */}
+          <motion.h1 key={lang} initial="hidden" animate={introDone ? 'show' : 'hidden'}
+            variants={{ hidden:{}, show:{ transition:{ staggerChildren:0.045, delayChildren:0.3 } } }}
+            style={{ fontFamily:F.serif, lineHeight:0.98, letterSpacing:'-0.03em',
+              color:C.cream, margin:'0 0 1.75rem' }}>
+            <span style={{ display:'block', fontSize:'clamp(3.6rem,11vw,9.5rem)', fontWeight:500 }}>
+              {tr.h1.split('').map((ch, i) => <Letter key={i} ch={ch} />)}
             </span>
-            <em style={{ display:'block', fontSize:'clamp(3.8rem,11vw,9rem)', fontWeight:400,
+            <em style={{ display:'block', fontSize:'clamp(3rem,9vw,7.5rem)', fontWeight:400,
               fontStyle:'italic', color:C.goldL }}>
-              {tr.h2}
+              {tr.h2.split('').map((ch, i) => <Letter key={i} ch={ch} />)}
             </em>
-          </h1>
+          </motion.h1>
 
           {/* Tagline */}
-          <p className="fade-up fade-up-3" style={{ fontFamily:F.sans, fontSize:'0.7rem',
-            fontWeight:300, letterSpacing:'0.14em', textTransform:'uppercase',
-            color:'rgba(247,242,232,0.6)', marginBottom:'2rem', display:'flex',
-            alignItems:'center', gap:'0.75rem' }}>
+          <motion.p
+            initial={{ opacity: 0, y: 14 }} animate={introDone ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 1.0 }}
+            style={{ fontFamily:F.sans, fontSize:'0.7rem', fontWeight:300,
+              letterSpacing:'0.14em', textTransform:'uppercase',
+              color:'rgba(247,242,232,0.65)', marginBottom:'2.25rem', display:'flex',
+              alignItems:'center', gap:'0.9rem' }}>
             <span style={{ width:32, height:1, background:C.gold, display:'block', flexShrink:0 }} />
             {tr.tagline}
-          </p>
+            <span style={{ width:32, height:1, background:C.gold, display:'block', flexShrink:0 }} />
+          </motion.p>
 
           {/* CTA */}
-          <a href={WA} target="_blank" rel="noopener noreferrer"
-            className="fade-up fade-up-4 inline-flex items-center gap-3 group"
-            style={{ fontFamily:F.sans, background:C.gold, color:C.deep, fontSize:'0.65rem',
-              fontWeight:700, letterSpacing:'0.18em', textTransform:'uppercase',
-              padding:'0.95rem 2rem', textDecoration:'none', transition:'background 0.25s' }}
-            onMouseEnter={e => (e.currentTarget.style.background = C.goldL)}
-            onMouseLeave={e => (e.currentTarget.style.background = C.gold)}
-          >
-            {tr.cta}
-            <ArrowRight size={14} style={{ transition:'transform 0.2s' }}
-              className="group-hover:translate-x-1" />
-          </a>
+          <motion.div
+            initial={{ opacity: 0, y: 14 }} animate={introDone ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 1.2 }}>
+            <a href={WA} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 group"
+              style={{ fontFamily:F.sans, background:C.gold, color:C.deep, fontSize:'0.65rem',
+                fontWeight:700, letterSpacing:'0.18em', textTransform:'uppercase',
+                padding:'0.95rem 2rem', textDecoration:'none', transition:'background 0.25s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = C.goldL)}
+              onMouseLeave={e => (e.currentTarget.style.background = C.gold)}
+            >
+              {tr.cta}
+              <ArrowRight size={14} style={{ transition:'transform 0.2s' }}
+                className="group-hover:translate-x-1" />
+            </a>
+          </motion.div>
         </div>
 
         {/* Scroll cue */}
-        <div className="absolute bottom-8 right-8 z-10 hidden md:flex flex-col items-center gap-2"
-          aria-hidden="true">
+        <motion.div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 hidden md:flex flex-col items-center gap-2"
+          aria-hidden="true"
+          initial={{ opacity: 0 }} animate={introDone ? { opacity: 1 } : {}}
+          transition={{ delay: 1.7, duration: 1 }}>
           <span style={{ fontFamily:F.sans, fontSize:'0.5rem', letterSpacing:'0.25em',
-            color:'rgba(247,242,232,0.35)', textTransform:'uppercase', writingMode:'vertical-rl' }}>
+            color:'rgba(247,242,232,0.4)', textTransform:'uppercase' }}>
             scroll
           </span>
-          <span style={{ width:1, height:44,
+          <span style={{ width:1, height:40,
             background:`linear-gradient(to bottom, ${C.gold}, transparent)` }} />
-        </div>
+        </motion.div>
       </section>
 
       {/* ════════════════════════════════════════
@@ -793,16 +1011,13 @@ export default function Page() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+            style={{ perspective: 1200 }}>
             {ROOMS.map((room, i) => (
-              <article key={room.key} className={`reveal reveal-delay-${i+1}`}
+              <TiltCard key={room.key} className={`reveal reveal-delay-${i+1}`}>
+              <article
                 style={{ background:C.white, overflow:'hidden',
-                  boxShadow:'0 2px 16px rgba(0,0,0,0.06)',
-                  transition:'transform 0.35s, box-shadow 0.35s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform='translateY(-6px)';
-                  (e.currentTarget as HTMLElement).style.boxShadow='0 16px 40px rgba(0,0,0,0.12)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform='';
-                  (e.currentTarget as HTMLElement).style.boxShadow='0 2px 16px rgba(0,0,0,0.06)'; }}
+                  boxShadow:'0 2px 16px rgba(0,0,0,0.08)' }}
               >
                 {/* Image */}
                 <div
@@ -882,8 +1097,58 @@ export default function Page() {
                   </div>
                 </div>
               </article>
+              </TiltCard>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════
+          RESTAURANT — menu card
+      ════════════════════════════════════════ */}
+      <section id="restaurant" style={{ background:C.deep, padding:'6.5rem 1.5rem',
+        position:'relative', overflow:'hidden' }}>
+        {/* faint valley photo behind the menu */}
+        <div aria-hidden="true" style={{ position:'absolute', inset:0,
+          backgroundImage:`url('${asset('/kyrgyzstan-bg.jpg')}')`,
+          backgroundSize:'cover', backgroundPosition:'center', opacity:0.07 }} />
+
+        <div className="relative z-10 max-w-2xl mx-auto text-center">
+          <div className="flex justify-center mb-6" aria-hidden="true">
+            <HornOrnament width={58} />
+          </div>
+          <SectionLabel text={tr.rest_label} center />
+          <h2 className="reveal" style={{ fontFamily:F.serif, fontSize:'clamp(2.4rem,5vw,4rem)',
+            fontWeight:500, letterSpacing:'-0.02em', color:C.cream, marginBottom:'0.6rem' }}>
+            {tr.rest_title}
+          </h2>
+          <p className="reveal reveal-delay-1" style={{ fontFamily:F.serif, fontStyle:'italic',
+            fontSize:'1.05rem', color:'rgba(223,192,122,0.85)', marginBottom:'3rem' }}>
+            {tr.rest_sub}
+          </p>
+
+          {/* menu list with dotted leaders */}
+          <div className="text-left">
+            {(['r1','r2','r3','r4','r5','r6'] as const).map((k, i) => (
+              <div key={k} className={`reveal reveal-delay-${(i % 3) + 1} flex items-baseline gap-4`}
+                style={{ padding:'1.1rem 0',
+                  borderBottom: i < 5 ? '1px solid rgba(201,160,82,0.15)' : 'none' }}>
+                <span style={{ fontFamily:F.serif, fontSize:'1.2rem', fontWeight:500,
+                  color:C.cream, whiteSpace:'nowrap' }}>{tr[k]}</span>
+                <span aria-hidden="true" style={{ flex:1, minWidth:24,
+                  borderBottom:'1px dotted rgba(201,160,82,0.4)',
+                  transform:'translateY(-5px)' }} />
+                <span style={{ fontFamily:F.sans, fontSize:'0.72rem', fontWeight:300,
+                  color:'rgba(237,229,208,0.6)', textAlign:'right' }}>{tr[`${k}d`]}</span>
+              </div>
+            ))}
+          </div>
+
+          <p className="reveal" style={{ fontFamily:F.sans, fontSize:'0.6rem', fontWeight:500,
+            letterSpacing:'0.2em', textTransform:'uppercase', color:'rgba(201,160,82,0.6)',
+            marginTop:'2.5rem' }}>
+            — {tr.rest_note} —
+          </p>
         </div>
       </section>
 
@@ -952,6 +1217,32 @@ export default function Page() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════
+          GALLERY BAND
+      ════════════════════════════════════════ */}
+      <section aria-label={tr.gal_title}
+        style={{ background:C.deep, padding:'5rem 0 5.5rem', overflow:'hidden',
+          borderTop:`1px solid rgba(201,160,82,0.15)` }}>
+        <div className="max-w-6xl mx-auto px-6 mb-10">
+          <SectionLabel text={tr.gal_label} />
+          <h2 className="reveal" style={{ fontFamily:F.serif, fontSize:'clamp(2rem,4vw,3.2rem)',
+            fontWeight:500, letterSpacing:'-0.02em', color:C.cream }}>
+            {tr.gal_title}
+          </h2>
+        </div>
+        {/* endless drifting film strip — pauses on hover */}
+        <div className="gallery-track" style={{ display:'flex', gap:'1rem', width:'max-content' }}>
+          {(() => {
+            const shots = ['/summer1.jpg','/kyrgyzstan-bg.jpg','/summer2.jpg','/hero-bg.webp','/summer3.jpg','/summer4.jpg'];
+            return [...shots, ...shots].map((src, i) => (
+              <img key={i} src={asset(src)} alt="" loading="lazy"
+                style={{ height:'clamp(220px,30vw,340px)', width:'auto', display:'block',
+                  flexShrink:0 }} />
+            ));
+          })()}
         </div>
       </section>
 
@@ -1050,6 +1341,24 @@ export default function Page() {
       </section>
 
       {/* ════════════════════════════════════════
+          FAQ
+      ════════════════════════════════════════ */}
+      <section id="faq" style={{ background:C.white, padding:'6rem 1.5rem' }}>
+        <div className="max-w-2xl mx-auto">
+          <SectionLabel text={tr.faq_label} />
+          <h2 className="reveal" style={{ fontFamily:F.serif, fontSize:'clamp(2.2rem,4vw,3.4rem)',
+            fontWeight:500, letterSpacing:'-0.02em', color:C.deep, marginBottom:'2rem' }}>
+            {tr.faq_title}
+          </h2>
+          <div className="reveal reveal-delay-1">
+            {([1,2,3,4,5,6] as const).map(i => (
+              <FaqItem key={`${lang}-${i}`} q={tr[`f${i}`]} a={tr[`f${i}a`]} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════
           CTA
       ════════════════════════════════════════ */}
       <section style={{ position:'relative', padding:'8rem 1.5rem',
@@ -1134,7 +1443,7 @@ export default function Page() {
             ))}
           </nav>
           <p style={{ fontFamily:F.sans, fontSize:'0.58rem', color:'rgba(237,229,208,0.25)' }}>
-            {tr.foot_copy}
+            © {new Date().getFullYear()} {tr.foot_copy}
           </p>
         </div>
       </footer>
