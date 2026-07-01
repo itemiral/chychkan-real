@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FormEvent, type CSSProperties } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   UtensilsCrossed, Droplets, Mountain, Fish, Leaf,
   Flame, Car, Coffee, Wifi, Clock, Compass, MapPin,
@@ -70,12 +70,6 @@ const T: Record<Lang, Record<string, string>> = {
     cta_label:'Брондоо', cta_title:'Сизди Чычканда күтүп жатабыз',
     cta_italic:'Тоонун жаны, табигаттын кучагы',
     cta_btn:'WhatsApp аркылуу брондоо',
-    form_or:'Же брондоо өтүнүчүн жөнөтүңүз', form_name:'Атыңыз', form_contact:'Email же телефон',
-    form_checkin:'Кирүү', form_checkout:'Чыгуу', form_guests:'Конок', form_room:'Бөлмө түрү',
-    form_room_any:'Маанилүү эмес', form_msg:'Билдирүү (милдеттүү эмес)',
-    form_submit:'Өтүнүч жөнөтүү', form_sending:'Жөнөтүлүүдө…',
-    form_success:'Рахмат! Өтүнүчүңүз кабыл алынды, тез арада жооп беребиз.',
-    form_error:'Бир нерсе туура эмес болду. WhatsApp аркылуу жазыңыз.',
     ig:'Instagram',
     foot_open:'Ачык: 1 Май — 30 Сентябрь',
     foot_copy:'© 2025 Touristic Complex Chychkan',
@@ -121,12 +115,6 @@ const T: Record<Lang, Record<string, string>> = {
     cta_label:'Бронирование', cta_title:'Ждём вас в Чычкане',
     cta_italic:'Душа гор, объятия природы',
     cta_btn:'Забронировать в WhatsApp',
-    form_or:'Или отправьте заявку на бронь', form_name:'Имя', form_contact:'Email или телефон',
-    form_checkin:'Заезд', form_checkout:'Выезд', form_guests:'Гостей', form_room:'Тип номера',
-    form_room_any:'Не важно', form_msg:'Сообщение (необязательно)',
-    form_submit:'Отправить заявку', form_sending:'Отправка…',
-    form_success:'Спасибо! Заявка получена, скоро ответим.',
-    form_error:'Что-то пошло не так. Напишите нам в WhatsApp.',
     ig:'Instagram',
     foot_open:'Открыт: 1 Мая — 30 Сентября',
     foot_copy:'© 2025 Туристический комплекс Чычкан',
@@ -172,12 +160,6 @@ const T: Record<Lang, Record<string, string>> = {
     cta_label:'Book Your Stay', cta_title:"We're waiting for you",
     cta_italic:"Mountain soul, nature's embrace",
     cta_btn:'Book via WhatsApp',
-    form_or:'Or send a booking request', form_name:'Full name', form_contact:'Email or phone',
-    form_checkin:'Check-in', form_checkout:'Check-out', form_guests:'Guests', form_room:'Room type',
-    form_room_any:'No preference', form_msg:'Message (optional)',
-    form_submit:'Send request', form_sending:'Sending…',
-    form_success:'Thanks! We received your request and will reply soon.',
-    form_error:'Something went wrong. Please WhatsApp us instead.',
     ig:'Instagram',
     foot_open:'Open: May 1 — September 30',
     foot_copy:'© 2025 Touristic Complex Chychkan',
@@ -230,24 +212,97 @@ const ACTS = [
 
 const WA = 'https://wa.me/message/SNUKLEBLJCCNB1';
 
-// Web3Forms relays the booking form to email with no backend of our own.
-// Get a free access key at https://web3forms.com (enter the inbox address,
-// they email the key instantly — no account needed).
-// TODO: replace this placeholder with the real key before going live.
-const WEB3FORMS_KEY = 'YOUR_WEB3FORMS_ACCESS_KEY';
-
 // On a GitHub Pages project site the app is served from a sub-path. Vite exposes
 // it as `import.meta.env.BASE_URL` (e.g. '/chychkan-real/'), which already has a
 // trailing slash — so strip the leading slash off asset paths before joining.
 const asset = (p: string) => import.meta.env.BASE_URL + p.replace(/^\//, '');
 
-// ── SECTION LABEL ─────────────────────────────────────────────
-function SectionLabel({ text }: { text: string }) {
+// ── KYRGYZ MOTIFS ─────────────────────────────────────────────
+// Tunduk — the crown of the yurt (as on the national flag), used as the brand mark.
+function Tunduk({ size = 18, color = C.gold, opacity = 1 }: { size?: number; color?: string; opacity?: number }) {
+  const arcs = (
+    <g stroke={color} strokeWidth="2.4" strokeLinecap="round" fill="none">
+      <path d="M9 29 C15 16, 33 16, 39 29" />
+      <path d="M12 34 C17 24, 31 24, 36 34" />
+      <path d="M15 39 C19 32, 29 32, 33 39" />
+    </g>
+  );
   return (
-    <p className="flex items-center gap-3 mb-4"
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true"
+      style={{ flexShrink: 0, opacity, display: 'block' }}>
+      <circle cx="24" cy="24" r="20.5" stroke={color} strokeWidth="3" />
+      {arcs}
+      <g transform="rotate(180 24 24)">{arcs}</g>
+    </svg>
+  );
+}
+
+// Kochkor muyuz — the ram's-horn motif from Kyrgyz felt carpets, used as a flourish.
+function HornOrnament({ width = 64, color = C.gold, opacity = 1 }: { width?: number; color?: string; opacity?: number }) {
+  return (
+    <svg width={width} height={width / 2} viewBox="0 0 64 32" fill="none" aria-hidden="true"
+      style={{ flexShrink: 0, opacity, display: 'block' }}>
+      <g stroke={color} strokeWidth="2" strokeLinecap="round" fill="none">
+        <path d="M32 28 C32 14 25 6 15 6 C7 6 3 12 5 18 C6.5 22.5 12 23.5 14.5 20 C16.5 17 14.5 13 11 13.5" />
+        <path d="M32 28 C32 14 39 6 49 6 C57 6 61 12 59 18 C57.5 22.5 52 23.5 49.5 20 C47.5 17 49.5 13 53 13.5" />
+      </g>
+      <circle cx="32" cy="28" r="2.2" fill={color} />
+    </svg>
+  );
+}
+
+// Oversized, barely-visible word behind a section — pure texture.
+function Watermark({ text }: { text: string }) {
+  return (
+    <span aria-hidden="true"
+      style={{ position:'absolute', top:'2rem', right:'-0.5rem', zIndex:0,
+        fontFamily:F.serif, fontStyle:'italic', fontWeight:600, lineHeight:1,
+        fontSize:'clamp(5rem,14vw,12rem)', color:C.forest, opacity:0.05,
+        whiteSpace:'nowrap', pointerEvents:'none', userSelect:'none' }}>
+      {text}
+    </span>
+  );
+}
+
+// ── COUNT-UP STAT ─────────────────────────────────────────────
+function CountUp({ value, suffix }: { value: number; suffix: string }) {
+  const ref = useRef<HTMLElement>(null);
+  const [n, setN] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setN(value); return; }
+    const io = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      io.disconnect();
+      const start = performance.now();
+      const tick = (now: number) => {
+        const p = Math.min(1, (now - start) / 1400);
+        setN(Math.round(value * (1 - Math.pow(1 - p, 3))));
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, { threshold: 0.5 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [value]);
+
+  return (
+    <strong ref={ref} style={{ display:'block', fontFamily:F.serif, fontSize:'1.9rem',
+      fontWeight:600, color:C.forest, lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
+      {n}{suffix}
+    </strong>
+  );
+}
+
+// ── SECTION LABEL ─────────────────────────────────────────────
+function SectionLabel({ text, center = false }: { text: string; center?: boolean }) {
+  return (
+    <p className={`flex items-center gap-3 mb-4 ${center ? 'justify-center' : ''}`}
       style={{ fontFamily:F.sans, fontSize:'0.6rem', fontWeight:600,
         letterSpacing:'0.28em', textTransform:'uppercase', color:C.gold }}>
-      <span style={{ display:'block', width:28, height:1, background:C.gold, flexShrink:0 }} />
+      <Tunduk size={15} />
       {text}
     </p>
   );
@@ -371,126 +426,29 @@ function Lightbox({ gallery, name, onClose }: { gallery: GalleryData; name: stri
   );
 }
 
-// ── BOOKING REQUEST FORM (Web3Forms — no backend) ─────────────
-function BookingForm({ tr }: { tr: Record<string, string> }) {
-  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-
-  const labelStyle: CSSProperties = {
-    fontFamily: F.sans, fontSize: '0.58rem', fontWeight: 600, letterSpacing: '0.12em',
-    textTransform: 'uppercase', color: 'rgba(247,242,232,0.55)', marginBottom: '0.35rem',
-    display: 'block', textAlign: 'left',
-  };
-  const fieldStyle: CSSProperties = {
-    fontFamily: F.sans, fontSize: '0.9rem', color: C.cream, width: '100%',
-    background: 'rgba(247,242,232,0.06)', border: '1px solid rgba(247,242,232,0.22)',
-    borderRadius: 2, padding: '0.7rem 0.8rem', outline: 'none',
-  };
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setStatus('sending');
-    const form = e.currentTarget;
-    const data = Object.fromEntries(new FormData(form).entries());
-    try {
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          access_key: WEB3FORMS_KEY,
-          subject: 'New booking request — Chychkan',
-          ...data,
-        }),
-      });
-      const json = await res.json();
-      if (json.success) { setStatus('success'); form.reset(); }
-      else setStatus('error');
-    } catch {
-      setStatus('error');
-    }
-  }
-
-  if (status === 'success') {
-    return (
-      <p style={{ fontFamily: F.serif, fontStyle: 'italic', fontSize: '1.15rem',
-        color: C.goldL, padding: '2rem 0', margin: 0 }}>
-        {tr.form_success}
-      </p>
-    );
-  }
-
-  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <label style={{ display: 'block' }}>
-      <span style={labelStyle}>{label}</span>
-      {children}
-    </label>
-  );
-
-  return (
-    <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '0.85rem', textAlign: 'left' }}>
-      {/* Honeypot — Web3Forms drops submissions where this is filled. */}
-      <input type="checkbox" name="botcheck" tabIndex={-1} autoComplete="off"
-        style={{ display: 'none' }} />
-
-      <Field label={tr.form_name}>
-        <input name="name" required autoComplete="name" style={fieldStyle} />
-      </Field>
-      <Field label={tr.form_contact}>
-        <input name="contact" required autoComplete="email" style={fieldStyle} />
-      </Field>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.6rem' }}>
-        <Field label={tr.form_checkin}>
-          <input name="check_in" type="date" required style={fieldStyle} />
-        </Field>
-        <Field label={tr.form_checkout}>
-          <input name="check_out" type="date" required style={fieldStyle} />
-        </Field>
-        <Field label={tr.form_guests}>
-          <input name="guests" type="number" min={1} defaultValue={2} required style={fieldStyle} />
-        </Field>
-      </div>
-
-      <Field label={tr.form_room}>
-        <select name="room" defaultValue="" style={fieldStyle}>
-          <option value="">{tr.form_room_any}</option>
-          {ROOMS.map(r => (
-            <option key={r.key} value={tr[r.key]}>{tr[r.key]}</option>
-          ))}
-        </select>
-      </Field>
-
-      <Field label={tr.form_msg}>
-        <textarea name="message" rows={3} style={{ ...fieldStyle, resize: 'vertical' }} />
-      </Field>
-
-      <button type="submit" disabled={status === 'sending'}
-        style={{ fontFamily: F.sans, background: C.gold, color: C.deep, fontSize: '0.65rem',
-          fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', border: 'none',
-          padding: '1rem 2rem', cursor: status === 'sending' ? 'wait' : 'pointer',
-          opacity: status === 'sending' ? 0.7 : 1, transition: 'opacity 0.2s', minHeight: 48 }}>
-        {status === 'sending' ? tr.form_sending : tr.form_submit}
-      </button>
-
-      {status === 'error' && (
-        <p style={{ fontFamily: F.sans, fontSize: '0.8rem', color: '#E8A0A0', margin: 0 }}>
-          {tr.form_error}
-        </p>
-      )}
-    </form>
-  );
-}
-
 // ── MAIN ──────────────────────────────────────────────────────
 export default function Page() {
   const [lang, setLang]           = useState<Lang>('ky');
   const [scrolled, setScrolled]   = useState(false);
   const [menuOpen, setMenuOpen]   = useState(false);
   const [lightbox, setLightbox]   = useState<{ gallery: GalleryData; name: string } | null>(null);
+  const heroParallax = useRef<HTMLDivElement>(null);
+  const progressRef  = useRef<HTMLDivElement>(null);
   const tr = T[lang];
 
-  // navbar scroll state
+  // navbar state + scroll progress + hero parallax (direct style writes — no re-render per frame)
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 60);
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const handler = () => {
+      setScrolled(window.scrollY > 60);
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - doc.clientHeight;
+      if (progressRef.current)
+        progressRef.current.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
+      if (!reduceMotion && heroParallax.current && window.scrollY < window.innerHeight * 1.5)
+        heroParallax.current.style.transform = `translateY(${window.scrollY * 0.25}px)`;
+    };
+    handler();
     window.addEventListener('scroll', handler, { passive: true });
     return () => window.removeEventListener('scroll', handler);
   }, []);
@@ -515,6 +473,18 @@ export default function Page() {
 
   return (
     <>
+      {/* Scroll progress */}
+      <div ref={progressRef} aria-hidden="true"
+        style={{ position:'fixed', top:0, left:0, right:0, height:2, zIndex:60,
+          background:`linear-gradient(to right, ${C.gold}, ${C.goldL})`,
+          transform:'scaleX(0)', transformOrigin:'left' }} />
+
+      {/* Film grain */}
+      <div aria-hidden="true"
+        style={{ position:'fixed', inset:0, zIndex:40, pointerEvents:'none',
+          opacity:0.045, mixBlendMode:'overlay',
+          backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
+
       {/* ════════════════════════════════════════
           NAVBAR
       ════════════════════════════════════════ */}
@@ -531,11 +501,15 @@ export default function Page() {
 
           {/* Logo */}
           <a href="#" aria-label="Chychkan Home"
-            style={{ fontFamily:F.serif, fontSize:'1.3rem', fontWeight:600, color:C.cream, letterSpacing:'0.03em', lineHeight:1.1 }}>
-            Chychkan
-            <span style={{ display:'block', fontFamily:F.sans, fontSize:'0.55rem', fontWeight:400,
-              letterSpacing:'0.22em', color:C.gold, textTransform:'uppercase', marginTop:1 }}>
-              Touristic Complex
+            style={{ display:'flex', alignItems:'center', gap:'0.65rem', textDecoration:'none' }}>
+            <Tunduk size={28} />
+            <span style={{ fontFamily:F.serif, fontSize:'1.3rem', fontWeight:600, color:C.cream,
+              letterSpacing:'0.03em', lineHeight:1.1 }}>
+              Chychkan
+              <span style={{ display:'block', fontFamily:F.sans, fontSize:'0.55rem', fontWeight:400,
+                letterSpacing:'0.22em', color:C.gold, textTransform:'uppercase', marginTop:1 }}>
+                Touristic Complex
+              </span>
             </span>
           </a>
 
@@ -593,7 +567,10 @@ export default function Page() {
           style={{ background: C.deep }}>
           <div className="flex items-center justify-between px-6 py-5"
             style={{ borderBottom:`1px solid rgba(201,160,82,0.2)` }}>
-            <span style={{ fontFamily:F.serif, fontSize:'1.2rem', color:C.cream }}>Chychkan</span>
+            <span style={{ display:'flex', alignItems:'center', gap:'0.6rem' }}>
+              <Tunduk size={22} />
+              <span style={{ fontFamily:F.serif, fontSize:'1.2rem', color:C.cream }}>Chychkan</span>
+            </span>
             <button onClick={() => setMenuOpen(false)} aria-label="Close menu" style={{ color:C.cream }}>
               <X size={22} />
             </button>
@@ -633,10 +610,14 @@ export default function Page() {
       <section id="hero" className="relative min-h-screen flex flex-col justify-end overflow-hidden"
         aria-label="Hero section">
 
-        {/* Background image */}
-        <div className="absolute inset-0 hero-bg"
-          style={{ backgroundImage:`url('${asset('/hero-bg.webp')}')`,
-            backgroundSize:'cover', backgroundPosition:'center' }} />
+        {/* Background image — outer div is scroll-parallaxed, inner keeps the Ken Burns drift.
+            Extended above the viewport so the parallax shift never exposes an edge. */}
+        <div ref={heroParallax} className="absolute inset-0" style={{ willChange:'transform' }}>
+          <div className="hero-bg"
+            style={{ position:'absolute', left:0, right:0, top:'-25%', height:'130%',
+              backgroundImage:`url('${asset('/hero-bg.webp')}')`,
+              backgroundSize:'cover', backgroundPosition:'center' }} />
+        </div>
 
         {/* Gradient overlays */}
         <div className="absolute inset-0"
@@ -707,10 +688,34 @@ export default function Page() {
       </section>
 
       {/* ════════════════════════════════════════
+          MARQUEE
+      ════════════════════════════════════════ */}
+      <div aria-hidden="true"
+        style={{ background:C.deep, borderBottom:'1px solid rgba(201,160,82,0.2)',
+          overflow:'hidden', padding:'0.9rem 0' }}>
+        <div className="marquee-track" style={{ display:'flex', width:'max-content' }}>
+          {(() => {
+            const items = [`${tr.h1} ${tr.h2}`, ...tr.tagline.split('·').map(s => s.trim())];
+            // rendered 4× so the -50% loop point always has identical content behind it
+            return [...items, ...items, ...items, ...items].map((item, i) => (
+              <span key={i} style={{ display:'inline-flex', alignItems:'center', gap:'2.5rem',
+                paddingRight:'2.5rem', fontFamily:F.serif, fontStyle:'italic', fontSize:'1.05rem',
+                letterSpacing:'0.06em', color:'rgba(223,192,122,0.75)', whiteSpace:'nowrap' }}>
+                {item}
+                <Tunduk size={13} opacity={0.5} />
+              </span>
+            ));
+          })()}
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════
           ABOUT
       ════════════════════════════════════════ */}
-      <section id="about" style={{ background:C.white, padding:'6rem 1.5rem' }}>
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+      <section id="about" style={{ background:C.white, padding:'6rem 1.5rem',
+        position:'relative', overflow:'hidden' }}>
+        <Watermark text={tr.h1} />
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
 
           {/* Text */}
           <div>
@@ -733,15 +738,17 @@ export default function Page() {
               {tr.about_p2}
             </p>
 
-            {/* Stats */}
+            {/* Stats — numbers count up when scrolled into view */}
             <div className="grid grid-cols-2 gap-5 reveal reveal-delay-2">
-              {[
-                { val:'2200м', lk:'s_alt' }, { val:'240км', lk:'s_km' },
-                { val:'2012',  lk:'s_yr'  }, { val:'B&B',   lk:'s_bb' },
-              ].map(s => (
-                <div key={s.val} style={{ borderLeft:`2px solid ${C.gold}`, paddingLeft:'1rem' }}>
-                  <strong style={{ display:'block', fontFamily:F.serif, fontSize:'1.9rem',
-                    fontWeight:600, color:C.forest, lineHeight:1 }}>{s.val}</strong>
+              {([
+                { num:2200, suffix:'м',  lk:'s_alt' }, { num:240, suffix:'км', lk:'s_km' },
+                { num:2012, suffix:'',   lk:'s_yr'  }, { val:'B&B',            lk:'s_bb' },
+              ] as { lk:string; num?:number; suffix?:string; val?:string }[]).map(s => (
+                <div key={s.lk} style={{ borderLeft:`2px solid ${C.gold}`, paddingLeft:'1rem' }}>
+                  {s.num !== undefined
+                    ? <CountUp value={s.num} suffix={s.suffix ?? ''} />
+                    : <strong style={{ display:'block', fontFamily:F.serif, fontSize:'1.9rem',
+                        fontWeight:600, color:C.forest, lineHeight:1 }}>{s.val}</strong>}
                   <span style={{ fontFamily:F.sans, fontSize:'0.6rem', textTransform:'uppercase',
                     letterSpacing:'0.1em', color:C.muted }}>{tr[s.lk]}</span>
                 </div>
@@ -773,8 +780,10 @@ export default function Page() {
       {/* ════════════════════════════════════════
           ROOMS
       ════════════════════════════════════════ */}
-      <section id="rooms" style={{ background:C.creamD, padding:'6rem 1.5rem' }}>
-        <div className="max-w-6xl mx-auto">
+      <section id="rooms" style={{ background:C.creamD, padding:'6rem 1.5rem',
+        position:'relative', overflow:'hidden' }}>
+        <Watermark text={tr.rooms_label} />
+        <div className="max-w-6xl mx-auto relative z-10">
 
           <div className="mb-12">
             <SectionLabel text={tr.rooms_label} />
@@ -885,7 +894,7 @@ export default function Page() {
         <div className="max-w-6xl mx-auto">
 
           <div className="text-center mb-14">
-            <SectionLabel text={tr.act_label} />
+            <SectionLabel text={tr.act_label} center />
             <h2 className="reveal" style={{ fontFamily:F.serif, fontSize:'clamp(2.4rem,5vw,4rem)',
               fontWeight:500, letterSpacing:'-0.02em', color:C.deep, marginBottom:'0.75rem' }}>
               {tr.act_title}
@@ -896,11 +905,11 @@ export default function Page() {
             </p>
           </div>
 
-          {/* Divider */}
+          {/* Ornament divider */}
           <div className="flex items-center justify-center mb-12" aria-hidden="true">
-            <span style={{ width:60, height:1, background:C.gold }} />
-            <span style={{ width:6, height:6, borderRadius:'50%', background:C.gold, margin:'0 8px' }} />
-            <span style={{ width:60, height:1, background:C.gold }} />
+            <span style={{ width:60, height:1, background:`linear-gradient(to left, ${C.gold}, transparent)` }} />
+            <span style={{ margin:'0 14px' }}><HornOrnament width={52} /></span>
+            <span style={{ width:60, height:1, background:`linear-gradient(to right, ${C.gold}, transparent)` }} />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px"
@@ -964,18 +973,25 @@ export default function Page() {
               {tr.loc_sub}
             </p>
 
-            <div>
+            {/* Route timeline — the gold line draws downward when the section scrolls in */}
+            <div className="reveal" style={{ position:'relative' }}>
+              <span className="route-draw" aria-hidden="true"
+                style={{ position:'absolute', left:'calc(1.25rem - 0.5px)', top:'1.25rem',
+                  bottom:'3rem', width:1,
+                  background:`linear-gradient(to bottom, ${C.gold}, rgba(201,160,82,0.25))` }} />
               {[
                 { n:'01', t:'d1t', b:'d1b' }, { n:'02', t:'d2t', b:'d2b' },
                 { n:'03', t:'d3t', b:'d3b' }, { n:'04', t:'d4t', b:'d4b' },
-              ].map(d => (
-                <div key={d.n} className="reveal"
-                  style={{ display:'grid', gridTemplateColumns:'2.5rem 1fr',
-                    gap:'1rem', padding:'1.2rem 0',
-                    borderBottom:`1px solid rgba(201,160,82,0.2)` }}>
-                  <span style={{ fontFamily:F.serif, fontSize:'1.5rem', fontWeight:600,
-                    color:C.gold, lineHeight:1 }}>{d.n}</span>
-                  <div>
+              ].map((d, i, arr) => (
+                <div key={d.n}
+                  style={{ display:'grid', gridTemplateColumns:'2.5rem 1fr', gap:'1.1rem',
+                    paddingBottom: i === arr.length - 1 ? 0 : '1.75rem', position:'relative' }}>
+                  <span style={{ width:'2.5rem', height:'2.5rem', borderRadius:'50%',
+                    border:`1px solid ${C.gold}`, background:C.creamD, display:'flex',
+                    alignItems:'center', justifyContent:'center', fontFamily:F.serif,
+                    fontSize:'0.95rem', fontWeight:600, color:C.gold,
+                    position:'relative', zIndex:1 }}>{d.n}</span>
+                  <div style={{ paddingTop:'0.3rem' }}>
                     <strong style={{ display:'block', fontFamily:F.sans, fontSize:'0.75rem',
                       fontWeight:600, color:C.deep, marginBottom:'0.2rem' }}>{tr[d.t]}</strong>
                     <span style={{ fontFamily:F.sans, fontSize:'0.72rem', fontWeight:300,
@@ -1045,7 +1061,10 @@ export default function Page() {
           background:'linear-gradient(to bottom, rgba(27,61,47,0.6), rgba(15,35,24,0.8))' }} />
 
         <div className="relative z-10 max-w-2xl mx-auto">
-          <SectionLabel text={tr.cta_label} />
+          <div className="flex justify-center mb-6" aria-hidden="true">
+            <HornOrnament width={60} opacity={0.8} />
+          </div>
+          <SectionLabel text={tr.cta_label} center />
           <h2 className="reveal" style={{ fontFamily:F.serif, fontSize:'clamp(2.5rem,6vw,5rem)',
             fontWeight:500, lineHeight:1.05, letterSpacing:'-0.02em', color:C.cream,
             marginBottom:'0.75rem' }}>
@@ -1080,20 +1099,6 @@ export default function Page() {
               @chychkan.tourism
             </a>
           </div>
-
-          {/* Divider + email-form fallback */}
-          <div className="reveal reveal-delay-3" style={{ display:'flex', alignItems:'center',
-            gap:'1rem', maxWidth:380, margin:'3rem auto 1.5rem' }}>
-            <span style={{ flex:1, height:1, background:'rgba(247,242,232,0.18)' }} />
-            <span style={{ fontFamily:F.sans, fontSize:'0.58rem', fontWeight:600,
-              letterSpacing:'0.15em', textTransform:'uppercase', color:'rgba(247,242,232,0.5)' }}>
-              {tr.form_or}
-            </span>
-            <span style={{ flex:1, height:1, background:'rgba(247,242,232,0.18)' }} />
-          </div>
-          <div className="reveal reveal-delay-3" style={{ maxWidth:380, margin:'0 auto' }}>
-            <BookingForm tr={tr} />
-          </div>
         </div>
       </section>
 
@@ -1103,14 +1108,17 @@ export default function Page() {
       <footer style={{ background:C.deep, borderTop:`1px solid rgba(201,160,82,0.15)`,
         padding:'2.5rem 1.5rem' }}>
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <span style={{ fontFamily:F.serif, fontSize:'1.05rem', fontWeight:500, color:C.cream }}>
-              Touristic Complex Chychkan
-            </span>
-            <span style={{ display:'block', fontFamily:F.sans, fontSize:'0.55rem',
-              letterSpacing:'0.2em', textTransform:'uppercase', color:C.gold, marginTop:4 }}>
-              {tr.foot_open}
-            </span>
+          <div style={{ display:'flex', alignItems:'center', gap:'0.8rem' }}>
+            <Tunduk size={32} opacity={0.85} />
+            <div>
+              <span style={{ fontFamily:F.serif, fontSize:'1.05rem', fontWeight:500, color:C.cream }}>
+                Touristic Complex Chychkan
+              </span>
+              <span style={{ display:'block', fontFamily:F.sans, fontSize:'0.55rem',
+                letterSpacing:'0.2em', textTransform:'uppercase', color:C.gold, marginTop:4 }}>
+                {tr.foot_open}
+              </span>
+            </div>
           </div>
           <nav className="flex gap-5" aria-label="Footer navigation">
             {(['#about','#rooms','#activities','#location'] as const).map((href, i) => (

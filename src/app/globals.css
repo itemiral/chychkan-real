@@ -167,8 +167,26 @@
 .reveal-delay-3 { transition-delay: 0.3s; }
 .reveal-delay-4 { transition-delay: 0.4s; }
 
+/* ── Marquee strip ── */
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee 32s linear infinite;
+}
+
+/* ── Route line draw (Location timeline) ── */
+.route-draw {
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
+}
+.reveal.visible .route-draw {
+  transform: scaleY(1);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .hero-bg, .fade-up, .reveal {
+  .hero-bg, .fade-up, .reveal, .marquee-track, .route-draw {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
