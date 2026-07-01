@@ -317,6 +317,219 @@ function Watermark({ text }: { text: string }) {
   );
 }
 
+// ── ILLUSTRATED PANORAMA — generated artwork, 3 parallax layers ──
+function Panorama() {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const yFar  = useTransform(scrollYProgress, [0, 1], [0,  reduce ? 0 : -34]);
+  const yMid  = useTransform(scrollYProgress, [0, 1], [18, reduce ? 18 : -58]);
+  const yNear = useTransform(scrollYProgress, [0, 1], [40, reduce ? 40 : -96]);
+
+  const layer = { position:'absolute' as const, left:0, right:0, top:-100, bottom:-100 };
+  const svgProps = {
+    viewBox: '0 0 1440 560',
+    preserveAspectRatio: 'xMidYMax slice' as const,
+    style: { width:'100%', height:'100%', display:'block' as const },
+    'aria-hidden': true as const,
+  };
+
+  return (
+    <section ref={ref} aria-hidden="true" className="relative overflow-hidden"
+      style={{ height:'clamp(340px,46vw,560px)', background:'#F2E8D2' }}>
+
+      {/* back — sky, sun, far ridge */}
+      <motion.div style={{ ...layer, y: yFar }}>
+        <svg {...svgProps}>
+          <defs>
+            <linearGradient id="pnSky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#F7F2E8" />
+              <stop offset="0.55" stopColor="#F2E8D2" />
+              <stop offset="1" stopColor="#E9DFC2" />
+            </linearGradient>
+          </defs>
+          <rect width="1440" height="560" fill="url(#pnSky)" />
+          <circle cx="1064" cy="150" r="88" fill="#DFC07A" opacity="0.22" />
+          <circle cx="1064" cy="150" r="46" fill="#DFC07A" opacity="0.9" />
+          <path d="M520 120 q8 -8 16 0 M548 128 q7 -7 14 0 M300 168 q7 -7 14 0"
+            stroke="#2E5E47" strokeWidth="2" fill="none" opacity="0.45" strokeLinecap="round" />
+          <path d="M0 316 L150 208 L262 276 L420 170 L560 262 L730 186 L890 258 L1050 196 L1210 258 L1330 214 L1440 262 V560 H0 Z"
+            fill="#9FB9A4" />
+        </svg>
+      </motion.div>
+
+      {/* mid — mountains, gold ridge light, mist */}
+      <motion.div style={{ ...layer, y: yMid }}>
+        <svg {...svgProps}>
+          <defs>
+            <filter id="pnBlur"><feGaussianBlur stdDeviation="16" /></filter>
+          </defs>
+          <path d="M0 372 L120 268 L250 342 L400 240 L540 330 L700 250 L860 336 L1020 262 L1180 340 L1310 288 L1440 344 V560 H0 Z"
+            fill="#4F7A5F" />
+          <path d="M400 240 L462 288 M700 250 L646 296 M1020 262 L1076 308"
+            stroke="#DFC07A" strokeWidth="1.5" opacity="0.55" />
+          <ellipse cx="720" cy="366" rx="540" ry="44" fill="#F7F2E8" opacity="0.32" filter="url(#pnBlur)" />
+        </svg>
+      </motion.div>
+
+      {/* near — dark hills, spruce forest, river, yurt, lodge */}
+      <motion.div style={{ ...layer, y: yNear }}>
+        <svg {...svgProps}>
+          <defs>
+            <linearGradient id="pnRiver" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#F7F2E8" stopOpacity="0.9" />
+              <stop offset="1" stopColor="#DFC07A" stopOpacity="0.75" />
+            </linearGradient>
+            <g id="pnTree">
+              <path d="M0 -64 L15 -36 L8 -36 L22 -10 L12 -10 L28 18 L-28 18 L-12 -10 L-22 -10 L-8 -36 L-15 -36 Z" />
+            </g>
+          </defs>
+
+          <path d="M0 430 Q220 392 430 424 T860 428 T1440 416 V560 H0 Z" fill="#1B3D2F" />
+
+          {/* river winding to the foreground */}
+          <path d="M708 420 C 680 452 760 466 726 494 C 690 524 800 536 764 560 L 872 560 C 830 528 928 512 888 488 C 850 464 760 454 744 420 Z"
+            fill="url(#pnRiver)" />
+
+          {/* yurt on the left bank */}
+          <g transform="translate(300 452)">
+            <path d="M-36 0 a36 24 0 0 1 72 0 z" fill="#EDE5D0" />
+            <path d="M-33 -9 h66" stroke="#C9A052" strokeWidth="1.4" opacity="0.7" />
+            <rect x="-8" y="-17" width="16" height="17" rx="1.5" fill="#6B4226" />
+            <circle cx="0" cy="-24" r="2.4" fill="#C9A052" />
+          </g>
+
+          {/* lodge on the right hill */}
+          <g transform="translate(1130 420)">
+            <path d="M-56 0 L0 -34 L56 0 Z" fill="#0F2318" />
+            <rect x="-46" y="0" width="92" height="34" fill="#16342A" />
+            <rect x="-26" y="10" width="13" height="13" fill="#DFC07A" opacity="0.9" />
+            <rect x="13" y="10" width="13" height="13" fill="#DFC07A" opacity="0.9" />
+          </g>
+
+          {/* mid-ground trees */}
+          <g fill="#163426">
+            <use href="#pnTree" transform="translate(90 470) scale(0.55)" />
+            <use href="#pnTree" transform="translate(190 466) scale(0.45)" />
+            <use href="#pnTree" transform="translate(1010 466) scale(0.5)" />
+            <use href="#pnTree" transform="translate(1330 470) scale(0.55)" />
+          </g>
+
+          {/* dark foreground */}
+          <path d="M0 478 Q260 448 520 472 T1040 476 T1440 464 V560 H0 Z" fill="#0F2318" />
+          <g fill="#0F2318">
+            <use href="#pnTree" transform="translate(60 540) scale(1.15)" />
+            <use href="#pnTree" transform="translate(160 548) scale(0.9)" />
+            <use href="#pnTree" transform="translate(245 542) scale(1.25)" />
+            <use href="#pnTree" transform="translate(1180 544) scale(1.05)" />
+            <use href="#pnTree" transform="translate(1280 550) scale(0.85)" />
+            <use href="#pnTree" transform="translate(1385 542) scale(1.2)" />
+          </g>
+        </svg>
+      </motion.div>
+
+      {/* etched caption */}
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-3"
+        style={{ zIndex: 2 }}>
+        <span style={{ width:26, height:1, background:'rgba(247,242,232,0.5)' }} />
+        <span style={{ fontFamily:F.sans, fontSize:'0.55rem', fontWeight:600,
+          letterSpacing:'0.3em', textTransform:'uppercase', color:'rgba(247,242,232,0.75)' }}>
+          Чычкан · 2200м
+        </span>
+        <span style={{ width:26, height:1, background:'rgba(247,242,232,0.5)' }} />
+      </div>
+    </section>
+  );
+}
+
+// ── NIGHT SCENE — generated starry-yurt artwork for the CTA ──
+function NightScene() {
+  // deterministic golden-angle star scatter — no randomness, stable across renders
+  const stars = Array.from({ length: 72 }, (_, i) => ({
+    x: Math.round(((i * 137.508) % 1440) * 10) / 10,
+    y: Math.round((((i * 97.31) % 270) + 12) * 10) / 10,
+    r: 0.5 + (i % 3) * 0.35,
+    o: 0.2 + ((i * 7) % 10) / 20,
+  }));
+  return (
+    <svg className="absolute inset-0" viewBox="0 0 1440 640" preserveAspectRatio="xMidYMax slice"
+      style={{ width:'100%', height:'100%', display:'block' }} aria-hidden="true">
+      <defs>
+        <linearGradient id="nsSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#08130C" />
+          <stop offset="0.7" stopColor="#122B1E" />
+          <stop offset="1" stopColor="#1B3D2F" />
+        </linearGradient>
+        <radialGradient id="nsGlow">
+          <stop offset="0" stopColor="#DFC07A" stopOpacity="0.4" />
+          <stop offset="1" stopColor="#DFC07A" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="1440" height="640" fill="url(#nsSky)" />
+      {stars.map((s, i) => (
+        <circle key={i} className="star" cx={s.x} cy={s.y} r={s.r} fill="#F7F2E8" opacity={s.o} />
+      ))}
+      {/* crescent moon */}
+      <circle cx="1120" cy="104" r="32" fill="#EDE5D0" opacity="0.85" />
+      <circle cx="1134" cy="94" r="29" fill="#0A170F" />
+      {/* mountains */}
+      <path d="M0 420 L200 300 L360 396 L560 280 L760 388 L980 292 L1180 392 L1320 330 L1440 396 V640 H0 Z"
+        fill="#0C1B12" />
+      <path d="M0 520 Q360 488 720 512 T1440 508 V640 H0 Z" fill="#08130C" />
+      {/* glowing yurt — someone is home */}
+      <g transform="translate(720 520)">
+        <circle cx="0" cy="-10" r="130" fill="url(#nsGlow)" />
+        <path d="M-58 0 a58 36 0 0 1 116 0 z" fill="#101E15" stroke="#C9A052" strokeOpacity="0.4" />
+        <path d="M-52 -14 h104" stroke="#C9A052" strokeWidth="1" opacity="0.3" />
+        <rect x="-13" y="-27" width="26" height="27" rx="2" fill="#DFC07A" opacity="0.95" />
+        <circle cx="0" cy="-38" r="3" fill="#C9A052" />
+        {/* smoke */}
+        <path d="M0 -44 q-6 -10 2 -18 q8 -8 2 -18" stroke="rgba(247,242,232,0.35)"
+          strokeWidth="2" fill="none" strokeLinecap="round" strokeDasharray="1 7" />
+      </g>
+    </svg>
+  );
+}
+
+// ── MENU LINE-ART ICONS — one per dish ───────────────────────
+function MenuIcon({ k }: { k: string }) {
+  const paths: Record<string, ReactNode> = {
+    r1: <> {/* beshbarmak — bowl with noodles */}
+      <path d="M5 16 a9 7 0 0 0 18 0 z" />
+      <path d="M8 12 q2.5 -3 5 0 q2.5 3 5 0" />
+    </>,
+    r2: <> {/* trout */}
+      <path d="M4 14 q6.5 -6.5 14 0 q-6.5 6.5 -14 0 z" />
+      <path d="M18 14 l5.5 -4 v8 z" />
+      <circle cx="8.5" cy="13" r="0.6" fill="currentColor" />
+    </>,
+    r3: <> {/* samsa — triangle with steam */}
+      <path d="M14 8 L23.5 23 H4.5 Z" />
+      <path d="M14 2 q1.5 1.5 0 3.5" />
+    </>,
+    r4: <> {/* shashlik — skewer */}
+      <path d="M4.5 23.5 L23.5 4.5" />
+      <path d="M8 17 l3 3 M12.5 12.5 l3 3 M17 8 l3 3" />
+    </>,
+    r5: <> {/* kese bowl of tea */}
+      <path d="M6 14 a8 6.5 0 0 0 16 0 z" />
+      <path d="M11 10 q1 -2 0 -4 M16 10 q1 -2 0 -4" />
+      <path d="M9 22 h10" />
+    </>,
+    r6: <> {/* kookor — kymyz flask */}
+      <path d="M14 4 c-5.5 3.5 -7.5 8.5 -6 13.5 a6.5 5 0 0 0 12 0 c1.5 -5 -0.5 -10 -6 -13.5 z" />
+      <path d="M11.5 4.5 h5" />
+    </>,
+  };
+  return (
+    <svg width="26" height="26" viewBox="0 0 28 28" fill="none" stroke="currentColor"
+      strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+      style={{ color:C.gold, flexShrink:0, alignSelf:'center', opacity:0.9 }}>
+      {paths[k]}
+    </svg>
+  );
+}
+
 // ── COUNT-UP STAT ─────────────────────────────────────────────
 function CountUp({ value, suffix }: { value: number; suffix: string }) {
   const ref = useRef<HTMLElement>(null);
@@ -996,6 +1209,11 @@ export default function Page() {
       </section>
 
       {/* ════════════════════════════════════════
+          ILLUSTRATED PANORAMA
+      ════════════════════════════════════════ */}
+      <Panorama />
+
+      {/* ════════════════════════════════════════
           ROOMS
       ════════════════════════════════════════ */}
       <section id="rooms" style={{ background:C.creamD, padding:'6rem 1.5rem',
@@ -1133,6 +1351,7 @@ export default function Page() {
               <div key={k} className={`reveal reveal-delay-${(i % 3) + 1} flex items-baseline gap-4`}
                 style={{ padding:'1.1rem 0',
                   borderBottom: i < 5 ? '1px solid rgba(201,160,82,0.15)' : 'none' }}>
+                <MenuIcon k={k} />
                 <span style={{ fontFamily:F.serif, fontSize:'1.2rem', fontWeight:500,
                   color:C.cream, whiteSpace:'nowrap' }}>{tr[k]}</span>
                 <span aria-hidden="true" style={{ flex:1, minWidth:24,
@@ -1362,12 +1581,8 @@ export default function Page() {
           CTA
       ════════════════════════════════════════ */}
       <section style={{ position:'relative', padding:'8rem 1.5rem',
-        textAlign:'center', overflow:'hidden', background:C.forest }}>
-        <div style={{ position:'absolute', inset:0,
-          backgroundImage:`url('${asset('/kyrgyzstan-bg.jpg')}')`,
-          backgroundSize:'cover', backgroundPosition:'center', opacity:0.12 }} />
-        <div style={{ position:'absolute', inset:0,
-          background:'linear-gradient(to bottom, rgba(27,61,47,0.6), rgba(15,35,24,0.8))' }} />
+        textAlign:'center', overflow:'hidden', background:C.deep }}>
+        <NightScene />
 
         <div className="relative z-10 max-w-2xl mx-auto">
           <div className="flex justify-center mb-6" aria-hidden="true">
