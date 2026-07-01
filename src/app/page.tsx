@@ -681,6 +681,26 @@ function Letter({ ch }: { ch: string }) {
   );
 }
 
+// ── MAGNETIC WRAPPER — button leans toward the cursor ────────
+function Magnetic({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [o, setO] = useState({ x: 0, y: 0 });
+  return (
+    <motion.div ref={ref} style={{ display:'inline-block' }}
+      onMouseMove={e => {
+        const r = ref.current?.getBoundingClientRect();
+        if (!r) return;
+        setO({ x: (e.clientX - r.left - r.width / 2) * 0.22,
+               y: (e.clientY - r.top - r.height / 2) * 0.35 });
+      }}
+      onMouseLeave={() => setO({ x: 0, y: 0 })}
+      animate={{ x: o.x, y: o.y }}
+      transition={{ type:'spring', stiffness: 180, damping: 14, mass: 0.5 }}>
+      {children}
+    </motion.div>
+  );
+}
+
 // ── 3D TILT CARD ──────────────────────────────────────────────
 function TiltCard({ children, className }: { children: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -917,6 +937,8 @@ export default function Page() {
   const [lightbox, setLightbox]   = useState<{ gallery: GalleryData; name: string } | null>(null);
   const [introDone, setIntroDone] = useState(false);
   const [activeSec, setActiveSec] = useState('');
+  const [hoverDish, setHoverDish] = useState<string | null>(null);
+  const [dishPos, setDishPos]     = useState({ x: 0, y: 0 });
   const wx = useGorgeWeather();
   const tr = T[lang];
 
@@ -1217,6 +1239,7 @@ export default function Page() {
           <motion.div
             initial={{ opacity: 0, y: 14 }} animate={introDone ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 1.2 }}>
+            <Magnetic>
             <a href={WA} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-3 group"
               style={{ fontFamily:F.sans, background:C.gold, color:C.deep, fontSize:'0.65rem',
@@ -1229,6 +1252,7 @@ export default function Page() {
               <ArrowRight size={14} style={{ transition:'transform 0.2s' }}
                 className="group-hover:translate-x-1" />
             </a>
+            </Magnetic>
           </motion.div>
         </div>
 
@@ -1473,10 +1497,16 @@ export default function Page() {
             {tr.rest_sub}
           </p>
 
-          {/* menu list with dotted leaders */}
-          <div className="text-left">
+          {/* menu list with dotted leaders — hover a dish to see its photo */}
+          <div className="text-left relative"
+            onMouseMove={e => {
+              const r = e.currentTarget.getBoundingClientRect();
+              setDishPos({ x: e.clientX - r.left, y: e.clientY - r.top });
+            }}
+            onMouseLeave={() => setHoverDish(null)}>
             {(['r1','r2','r3','r4','r5','r6'] as const).map((k, i) => (
               <div key={k} className={`reveal reveal-delay-${(i % 3) + 1} flex items-baseline gap-4`}
+                onMouseEnter={() => setHoverDish(k)}
                 style={{ padding:'1.1rem 0',
                   borderBottom: i < 5 ? '1px solid rgba(201,160,82,0.15)' : 'none' }}>
                 <MenuIcon k={k} />
@@ -1489,6 +1519,26 @@ export default function Page() {
                   color:'rgba(237,229,208,0.6)', textAlign:'right' }}>{tr[`${k}d`]}</span>
               </div>
             ))}
+
+            {/* floating dish photo (desktop only, decorative) */}
+            <motion.img
+              className="hidden md:block"
+              src={hoverDish ? asset(`/gen/dish-${
+                ({ r1:'beshbarmak', r2:'trout', r3:'samsa', r4:'shashlik', r5:'boorsok', r6:'kymyz' })[hoverDish]
+              }.webp`) : undefined}
+              alt=""
+              aria-hidden="true"
+              initial={false}
+              animate={{ opacity: hoverDish ? 1 : 0, scale: hoverDish ? 1 : 0.85,
+                x: dishPos.x + 30, y: dishPos.y - 190 }}
+              transition={{ opacity:{ duration:0.2 }, scale:{ duration:0.25 },
+                x:{ type:'spring', stiffness:150, damping:20 },
+                y:{ type:'spring', stiffness:150, damping:20 } }}
+              style={{ position:'absolute', top:0, left:0, width:190, height:190,
+                objectFit:'cover', pointerEvents:'none', zIndex:20,
+                border:`1px solid rgba(201,160,82,0.5)`,
+                boxShadow:'0 20px 50px rgba(0,0,0,0.5)' }}
+            />
           </div>
 
           <p className="reveal" style={{ fontFamily:F.sans, fontSize:'0.6rem', fontWeight:500,
@@ -1583,7 +1633,12 @@ export default function Page() {
         {/* endless drifting film strip — pauses on hover */}
         <div className="gallery-track" style={{ display:'flex', gap:'1rem', width:'max-content' }}>
           {(() => {
-            const shots = ['/summer1.jpg','/kyrgyzstan-bg.jpg','/summer2.jpg','/hero-bg.webp','/summer3.jpg','/summer4.jpg'];
+            const shots = [
+              '/summer1.jpg', '/gen/scenic-river.webp', '/kyrgyzstan-bg.jpg',
+              '/gen/scenic-horses.webp', '/summer2.jpg', '/gen/scenic-forest.webp',
+              '/hero-bg.webp', '/gen/scenic-yurt.webp', '/summer3.jpg',
+              '/gen/scenic-night.webp', '/summer4.jpg', '/gen/scenic-berries.webp',
+            ];
             return [...shots, ...shots].map((src, i) => (
               <img key={i} src={asset(src)} alt="" loading="lazy"
                 style={{ height:'clamp(220px,30vw,340px)', width:'auto', display:'block',
@@ -1731,6 +1786,7 @@ export default function Page() {
             {tr.cta_italic}
           </p>
           <div className="flex flex-wrap gap-4 justify-center reveal reveal-delay-2">
+            <Magnetic>
             <a href={WA} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 group"
               style={{ fontFamily:F.sans, background:C.gold, color:C.deep, fontSize:'0.65rem',
@@ -1743,6 +1799,7 @@ export default function Page() {
               {tr.cta_btn}
               <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </a>
+            </Magnetic>
             <a href="https://instagram.com/chychkan.tourism" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2"
               style={{ fontFamily:F.sans, border:`1px solid rgba(247,242,232,0.3)`, color:C.cream,
