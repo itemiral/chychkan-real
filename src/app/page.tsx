@@ -5,6 +5,7 @@ import {
   UtensilsCrossed, Droplets, Mountain, Fish, Leaf,
   Flame, Car, Coffee, Wifi, Clock, Compass, MapPin,
   ArrowRight, Menu, X, ChevronLeft, ChevronRight, Play, Plus,
+  Sun, Cloud, CloudRain, CloudSnow, CloudFog, CloudLightning,
 } from 'lucide-react';
 
 // ── TYPES ─────────────────────────────────────────────────────
@@ -442,6 +443,106 @@ function Panorama() {
   );
 }
 
+// ── LIVE GORGE WEATHER (Open-Meteo, no key, fails silently) ──
+function useGorgeWeather() {
+  const [wx, setWx] = useState<{ t: number; code: number } | null>(null);
+  useEffect(() => {
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=42.05&longitude=72.85&current=temperature_2m,weather_code')
+      .then(r => r.json())
+      .then(j => setWx({ t: Math.round(j.current.temperature_2m), code: j.current.weather_code }))
+      .catch(() => {});
+  }, []);
+  return wx;
+}
+
+function WxIcon({ code, size = 13 }: { code: number; size?: number }) {
+  const Icon =
+    code <= 1 ? Sun :
+    code <= 3 ? Cloud :
+    code <= 48 ? CloudFog :
+    code <= 67 ? CloudRain :
+    code <= 77 ? CloudSnow :
+    code <= 82 ? CloudRain :
+    CloudLightning;
+  return <Icon size={size} aria-hidden="true" />;
+}
+
+// ── JOURNEY STRIP — the road from Bishkek draws itself as you scroll ──
+const ROAD_PATH = 'M80 320 C300 314 410 152 720 132 C1030 112 1160 294 1360 298';
+
+function Journey({ caption }: { caption: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.9', 'end 0.4'] });
+  const drawn = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const dist  = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
+
+  const label = {
+    fontFamily: F.sans, fontSize: 11, fontWeight: 600 as const,
+    letterSpacing: '0.18em', fill: C.muted,
+  };
+
+  return (
+    <div ref={ref} className="reveal" style={{ marginBottom:'3.5rem' }}>
+      <svg viewBox="0 0 1440 400" style={{ width:'100%', height:'auto', display:'block' }}
+        aria-hidden="true">
+
+        {/* faint backdrop ridges */}
+        <path d="M0 344 L200 268 L360 330 L540 220 L700 320 L900 240 L1080 328 L1240 274 L1440 336 V400 H0 Z"
+          fill="#2E5E47" opacity="0.08" />
+        {/* the pass mountain with snow cap */}
+        <path d="M552 336 L720 126 L888 336 Z" fill="#4F7A5F" opacity="0.22" />
+        <path d="M688 166 L720 126 L752 166 L736 158 L720 172 L704 158 Z" fill="#F7F2E8" />
+
+        {/* base road (faint dashes) + road that draws itself */}
+        <path d={ROAD_PATH} fill="none" stroke="rgba(107,66,38,0.3)" strokeWidth="3"
+          strokeDasharray="1 10" strokeLinecap="round" />
+        <motion.path d={ROAD_PATH} fill="none" stroke={C.gold} strokeWidth="3"
+          strokeLinecap="round" style={{ pathLength: reduce ? 1 : drawn }} />
+
+        {/* travelling marker rides the same path */}
+        {!reduce && (
+          <motion.circle r="7" fill={C.gold} stroke="#FDFAF5" strokeWidth="2.5"
+            style={{ offsetPath:`path('${ROAD_PATH}')`, offsetDistance: dist }} />
+        )}
+
+        {/* Bishkek — little skyline */}
+        <g transform="translate(80 320)">
+          <rect x="-30" y="-34" width="13" height="34" fill="#2E5E47" opacity="0.75" />
+          <rect x="-13" y="-48" width="14" height="48" fill="#2E5E47" opacity="0.9" />
+          <rect x="5" y="-26" width="12" height="26" fill="#2E5E47" opacity="0.6" />
+          <circle r="5" cy="4" fill="#6B4226" />
+        </g>
+
+        {/* Ala-Bel flag */}
+        <g transform="translate(720 126)">
+          <line y2="-30" stroke="#6B4226" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M0 -30 l20 6 -20 6 z" fill={C.gold} />
+        </g>
+
+        {/* Chychkan — spruce + lodge + tunduk */}
+        <g transform="translate(1360 298)">
+          <path d="M-34 4 L-24 -34 L-14 4 Z M-24 -34 L-24 4" fill="#1B3D2F" />
+          <path d="M2 4 v-20 h30 v20 z" fill="#1B3D2F" />
+          <path d="M-4 -16 L17 -32 L38 -16 Z" fill="#0F2318" />
+          <rect x="10" y="-10" width="7" height="8" fill="#DFC07A" />
+          <circle r="5" cy="8" fill="#6B4226" />
+        </g>
+
+        {/* labels */}
+        <text x="80" y="356" textAnchor="middle" style={label}>БИШКЕК · 750М</text>
+        <text x="720" y="104" textAnchor="middle" style={{ ...label, fill:'#6B4226' }}>АЛА-БЕЛ · 3175М</text>
+        <text x="1360" y="336" textAnchor="middle" style={{ ...label, fill:C.forest }}>ЧЫЧКАН · 2200М</text>
+      </svg>
+
+      <p style={{ fontFamily:F.serif, fontStyle:'italic', fontSize:'0.95rem', color:C.mid,
+        textAlign:'center', margin:'0.5rem 0 0' }}>
+        {caption}
+      </p>
+    </div>
+  );
+}
+
 // ── NIGHT SCENE — generated starry-yurt artwork for the CTA ──
 function NightScene() {
   // deterministic golden-angle star scatter — no randomness, stable across renders
@@ -815,7 +916,20 @@ export default function Page() {
   const [menuOpen, setMenuOpen]   = useState(false);
   const [lightbox, setLightbox]   = useState<{ gallery: GalleryData; name: string } | null>(null);
   const [introDone, setIntroDone] = useState(false);
+  const [activeSec, setActiveSec] = useState('');
+  const wx = useGorgeWeather();
   const tr = T[lang];
+
+  // highlight the nav link for the section in view
+  useEffect(() => {
+    const ids = ['about', 'rooms', 'restaurant', 'activities', 'location'];
+    const obs = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) setActiveSec(`#${e.target.id}`); }),
+      { rootMargin: '-40% 0px -55% 0px' }
+    );
+    ids.forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el); });
+    return () => obs.disconnect();
+  }, []);
 
   const reduceMotion = useReducedMotion();
   const { scrollY, scrollYProgress } = useScroll();
@@ -919,15 +1033,20 @@ export default function Page() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
-            {navLinks.map(l => (
-              <a key={l.href} href={l.href}
-                style={{ fontFamily:F.sans, fontSize:'0.65rem', fontWeight:500,
-                  letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(247,242,232,0.75)',
-                  textDecoration:'none', transition:'color 0.2s' }}
-                onMouseEnter={e => (e.currentTarget.style.color = C.cream)}
-                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(247,242,232,0.75)')}
-              >{l.label}</a>
-            ))}
+            {navLinks.map(l => {
+              const isActive = activeSec === l.href;
+              return (
+                <a key={l.href} href={l.href}
+                  style={{ fontFamily:F.sans, fontSize:'0.65rem', fontWeight:500,
+                    letterSpacing:'0.14em', textTransform:'uppercase',
+                    color: isActive ? C.goldL : 'rgba(247,242,232,0.75)',
+                    borderBottom: isActive ? `1px solid ${C.gold}` : '1px solid transparent',
+                    paddingBottom: 2, textDecoration:'none', transition:'color 0.2s, border-color 0.2s' }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = C.cream; }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = 'rgba(247,242,232,0.75)'; }}
+                >{l.label}</a>
+              );
+            })}
           </nav>
 
           {/* Right: lang + book */}
@@ -1056,6 +1175,15 @@ export default function Page() {
               letterSpacing:'0.25em', textTransform:'uppercase', color:C.goldL }}>
               {tr.season} · {new Date().getFullYear()}
             </span>
+            {wx && (
+              <span className="flex items-center gap-1.5"
+                style={{ fontFamily:F.sans, fontSize:'0.6rem', fontWeight:600,
+                  letterSpacing:'0.2em', color:'rgba(247,242,232,0.75)',
+                  borderLeft:'1px solid rgba(201,160,82,0.4)', paddingLeft:'0.7rem', marginLeft:'0.2rem' }}>
+                <WxIcon code={wx.code} />
+                {wx.t}°C
+              </span>
+            )}
           </motion.div>
 
           {/* Headline — letters rise one by one; replays on language switch */}
@@ -1469,6 +1597,10 @@ export default function Page() {
           LOCATION
       ════════════════════════════════════════ */}
       <section id="location" style={{ background:C.creamD, padding:'6rem 1.5rem' }}>
+        {/* Journey strip — full width above the details grid */}
+        <div className="max-w-6xl mx-auto">
+          <Journey caption={tr.d4b} />
+        </div>
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-start">
 
           {/* Directions */}
