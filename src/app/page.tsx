@@ -47,6 +47,8 @@ const T: Record<Lang, Record<string, string>> = {
     about_p2:'Кристалл таза суу, тоо абасы, чексиз жашыл токой — табигат менен биригүүнүн мыкты жери.',
     s_alt:'Деңиз деңгээлинен', s_km:'Бишкектен', s_yr:'Ачылган жыл', s_bb:'Эртең мен кирет',
     seasons_l:'сезон', snd:'Дарыянын добушу',
+    meta_t:'Чычкан Капчыгайы — Тоо комплекси, Кыргызстан',
+    meta_d:'Чычкан капчыгайындагы тоо комплекси, Бишкектен 240 км, 2200м. Бөлмөлөр, юрта, ресторан, ат жарышы, треккинг. 1-майдан 30-сентябрга чейин.',
     rooms_label:'Жайлоо', rooms_title:'Бөлмөлөр жана Баалар',
     bb:'Эртең мен кирет', per_night:'/түн', book:'Брондоо',
     hostel:'Жатакана', double:'Дабл', twin:'Твин', eco:'Экологиялык Үй', summer:'Жайкы Үй', lux:'Люкс (2 бөлмө)', yurt:'Балкондуу Юрта',
@@ -115,6 +117,8 @@ const T: Record<Lang, Record<string, string>> = {
     about_p2:'Кристально чистые реки, горный воздух, бескрайние леса — лучшее место для единения с природой.',
     s_alt:'Над уровнем моря', s_km:'От Бишкека', s_yr:'Год основания', s_bb:'Завтрак включён',
     seasons_l:'сезонов', snd:'Звук реки',
+    meta_t:'Ущелье Чычкан — Горный комплекс, Кыргызстан',
+    meta_d:'Горный комплекс в ущелье Чычкан, 240 км от Бишкека, 2200м. Номера, юрта, ресторан, конные прогулки, треккинг. Открыт с 1 мая по 30 сентября.',
     rooms_label:'Проживание', rooms_title:'Номера и цены',
     bb:'Завтрак включён', per_night:'/ночь', book:'Забронировать',
     hostel:'Хостел', double:'Дабл', twin:'Твин', eco:'Эко Домик', summer:'Летник', lux:'Люкс (2 комнаты)', yurt:'Юрта с Балконом',
@@ -183,6 +187,8 @@ const T: Record<Lang, Record<string, string>> = {
     about_p2:'Crystal rivers, mountain air, endless forest — the finest place to reconnect with nature.',
     s_alt:'Above sea level', s_km:'From Bishkek', s_yr:'Founded', s_bb:'Breakfast included',
     seasons_l:'seasons', snd:'River sound',
+    meta_t:'Chychkan Gorge — Mountain Lodge, Kyrgyzstan',
+    meta_d:'Mountain lodge in the Chychkan Gorge, 240 km from Bishkek at 2200m. Rooms, yurt, restaurant, horseback riding, trekking. Open May 1 — September 30.',
     rooms_label:'Accommodation', rooms_title:'Rooms & Rates',
     bb:'Breakfast included', per_night:'/night', book:'Book Now',
     hostel:'Hostel Room', double:'Double Room', twin:'Twin Room', eco:'Eco House', summer:'Summer House', lux:'Lux (2 rooms)', yurt:'Yurt with Balcony',
@@ -276,16 +282,16 @@ const TIER_BADGE: Record<string,string> = {
 };
 
 // ── ACTIVITIES ────────────────────────────────────────────────
-const ACTS = [
-  { icon: Compass,         tk:'a1', dk:'a1d' },
-  { icon: UtensilsCrossed, tk:'a2', dk:'a2d' },
+const ACTS: { icon: typeof Compass; tk: string; dk: string; img?: string }[] = [
+  { icon: Compass,         tk:'a1', dk:'a1d', img:'/gen/g-jailoo.webp' },
+  { icon: UtensilsCrossed, tk:'a2', dk:'a2d', img:'/gen/g-dish-samsa.webp' },
   { icon: Droplets,        tk:'a3', dk:'a3d' },
-  { icon: Mountain,        tk:'a4', dk:'a4d' },
-  { icon: Fish,            tk:'a5', dk:'a5d' },
-  { icon: Leaf,            tk:'a6', dk:'a6d' },
-  { icon: Flame,           tk:'a7', dk:'a7d' },
+  { icon: Mountain,        tk:'a4', dk:'a4d', img:'/gen/g-forest.webp' },
+  { icon: Fish,            tk:'a5', dk:'a5d', img:'/gen/g-river.webp' },
+  { icon: Leaf,            tk:'a6', dk:'a6d', img:'/gen/g-berries.webp' },
+  { icon: Flame,           tk:'a7', dk:'a7d', img:'/gen/g-night.webp' },
   { icon: Car,             tk:'a8', dk:'a8d' },
-  { icon: Coffee,          tk:'a9', dk:'a9d' },
+  { icon: Coffee,          tk:'a9', dk:'a9d', img:'/gen/g-dish-boorsok.webp' },
   { icon: Wifi,            tk:'a10', dk:'a10d' },
   { icon: Clock,           tk:'a11', dk:'a11d' },
 ];
@@ -1324,8 +1330,12 @@ export default function Page() {
   const wx = useGorgeWeather();
   const tr = T[lang];
 
-  // keep the document language in sync for screen readers / SEO
-  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  // keep the document language, title, and description in sync
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.title = T[lang].meta_t;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', T[lang].meta_d);
+  }, [lang]);
 
   // highlight the nav link for the section in view
   useEffect(() => {
@@ -1995,10 +2005,11 @@ export default function Page() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px"
             style={{ background:`rgba(201,160,82,0.12)`, border:`1px solid rgba(201,160,82,0.12)` }}>
-            {ACTS.map(({ icon: Icon, tk, dk }, i) => (
-              <div key={tk} className={`reveal reveal-delay-${(i % 4) + 1}`}
+            {ACTS.map(({ icon: Icon, tk, dk, img }, i) => (
+              <div key={tk} className={`act-tile reveal reveal-delay-${(i % 4) + 1}`}
                 style={{ background:C.white, padding:'2rem 1.75rem',
-                  transition:'background 0.3s, transform 0.3s',
+                  transition:'background 0.3s, transform 0.3s', position:'relative',
+                  overflow:'hidden',
                   display:'flex', flexDirection:'column', gap:'0.75rem' }}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLElement).style.background = C.forest;
@@ -2019,14 +2030,19 @@ export default function Page() {
                   if (ico) ico.style.color = C.gold;
                 }}
               >
-                <div className="flex items-start justify-between">
+                {img && (
+                  <img src={asset(img)} alt="" aria-hidden="true" loading="lazy" className="act-img"
+                    style={{ position:'absolute', inset:0, width:'100%', height:'100%',
+                      objectFit:'cover' }} />
+                )}
+                <div className="flex items-start justify-between" style={{ position:'relative', zIndex:1 }}>
                   <Icon size={22} className="act-icon" style={{ color:C.gold, transition:'color 0.3s' }} />
                   <span aria-hidden="true" style={{ fontFamily:F.serif, fontStyle:'italic',
                     fontSize:'0.85rem', fontWeight:600, color:C.red, opacity:0.45 }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                 </div>
-                <div>
+                <div style={{ position:'relative', zIndex:1 }}>
                   <p className="act-title" style={{ fontFamily:F.serif, fontSize:'1.1rem',
                     fontWeight:500, color:C.deep, transition:'color 0.3s', marginBottom:'0.25rem' }}>
                     {tr[tk]}

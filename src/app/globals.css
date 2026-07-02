@@ -176,6 +176,17 @@
   animation: marquee 32s linear infinite;
 }
 
+/* ── Activity tile hover imagery ── */
+.act-img {
+  opacity: 0;
+  transform: scale(1.06);
+  transition: opacity 0.45s ease, transform 0.8s ease;
+}
+.act-tile:hover .act-img {
+  opacity: 0.22;
+  transform: scale(1);
+}
+
 /* ── Star twinkle (CTA night scene) ── */
 @keyframes twinkle {
   0%, 100% { opacity: 0.12; }
