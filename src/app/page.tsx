@@ -4,7 +4,7 @@ import Lenis from 'lenis';
 import {
   UtensilsCrossed, Droplets, Mountain, Fish, Leaf,
   Flame, Car, Coffee, Wifi, Clock, Compass, MapPin,
-  ArrowRight, Menu, X, ChevronLeft, ChevronRight, Play, Plus,
+  ArrowRight, Menu, X, ChevronLeft, ChevronRight, Play, Plus, Check, Users,
   Sun, Cloud, CloudRain, CloudSnow, CloudFog, CloudLightning,
 } from 'lucide-react';
 
@@ -50,6 +50,11 @@ const T: Record<Lang, Record<string, string>> = {
     hostel:'Жатакана', double:'Дабл', twin:'Твин', eco:'Экологиялык Үй', summer:'Жайкы Үй', lux:'Люкс (2 бөлмө)', yurt:'Балкондуу Юрта',
     t_hostel:'Жатакана', t_mid:'Комфорт', t_family:'Үй-бүлөлүк', t_premium:'Премиум',
     double_single:'Бир конок үчүн да жеткиликтүү: $50 / 4 500 KGS',
+    rd_details:'Толугураак', rd_book_room:'Ушул бөлмөнү брондоо',
+    cap_hostel:'4 конокко чейин', cap_double:'2 конок', cap_twin:'2 конок',
+    cap_eco:'4 конокко чейин', cap_summer:'4 конокко чейин', cap_lux:'4 конокко чейин', cap_yurt:'3 конокко чейин',
+    am_priv:'Жеке душ жана даараткана', am_shared:'Жалпы душ', am_view:'Тоо көрүнүшү',
+    am_balcony:'Балкон', am_terrace:'Терраса', am_2rooms:'Эки бөлмө', am_heat:'Жылытуу',
     act_label:'Активдүүлүктөр', act_title:'Сизди эмне күтөт',
     act_sub:'Чычкан — жөн гана жаткан жер эмес. Табигат, маданият жана тынчтык.',
     a1:'Ат жарышы', a1d:'Тоо жолдору боюнча аттуу сейил',
@@ -112,6 +117,11 @@ const T: Record<Lang, Record<string, string>> = {
     hostel:'Хостел', double:'Дабл', twin:'Твин', eco:'Эко Домик', summer:'Летник', lux:'Люкс (2 комнаты)', yurt:'Юрта с Балконом',
     t_hostel:'Хостел', t_mid:'Комфорт', t_family:'Семейный', t_premium:'Премиум',
     double_single:'Также доступен для 1 гостя: $50 / 4 500 KGS',
+    rd_details:'Подробнее', rd_book_room:'Забронировать этот номер',
+    cap_hostel:'До 4 гостей', cap_double:'2 гостя', cap_twin:'2 гостя',
+    cap_eco:'До 4 гостей', cap_summer:'До 4 гостей', cap_lux:'До 4 гостей', cap_yurt:'До 3 гостей',
+    am_priv:'Свой душ и туалет', am_shared:'Общий душ', am_view:'Вид на горы',
+    am_balcony:'Балкон', am_terrace:'Терраса', am_2rooms:'Две комнаты', am_heat:'Отопление',
     act_label:'Активности', act_title:'Что вас ждёт',
     act_sub:'Чычкан — это не просто ночлег. Природа, культура и покой.',
     a1:'Верховая езда', a1d:'Конные прогулки по горным тропам',
@@ -174,6 +184,11 @@ const T: Record<Lang, Record<string, string>> = {
     hostel:'Hostel Room', double:'Double Room', twin:'Twin Room', eco:'Eco House', summer:'Summer House', lux:'Lux (2 rooms)', yurt:'Yurt with Balcony',
     t_hostel:'Hostel', t_mid:'Comfort', t_family:'Family', t_premium:'Premium',
     double_single:'Also available as single (1 guest): $50 / 4 500 KGS',
+    rd_details:'Details', rd_book_room:'Book this room',
+    cap_hostel:'Up to 4 guests', cap_double:'2 guests', cap_twin:'2 guests',
+    cap_eco:'Up to 4 guests', cap_summer:'Up to 4 guests', cap_lux:'Up to 4 guests', cap_yurt:'Up to 3 guests',
+    am_priv:'Private shower & WC', am_shared:'Shared shower', am_view:'Mountain view',
+    am_balcony:'Balcony', am_terrace:'Terrace', am_2rooms:'Two rooms', am_heat:'Heating',
     act_label:'Activities', act_title:'What awaits you',
     act_sub:'Chychkan is more than a place to sleep — it is nature, culture, and stillness.',
     a1:'Horseback Riding', a1d:'Guided rides along mountain trails',
@@ -224,22 +239,29 @@ const T: Record<Lang, Record<string, string>> = {
 const ROOMS: {
   key: string; usd: string; kgs: string; tier: string; img: string;
   gallery: { images: string[]; video: string } | null;
+  amen: string[];
   singleUsd?: string; singleKgs?: string;
 }[] = [
-  { key:'hostel',  usd:'$15',  kgs:'1 500', tier:'hostel',  img:'/room-hostel.jpg',  gallery: null },
-  { key:'double',  usd:'$65',  kgs:'5 800', tier:'mid',     img:'/room-double.jpg',  gallery: null,
-    singleUsd:'$50', singleKgs:'4 500' },
-  { key:'twin',    usd:'$65',  kgs:'5 800', tier:'mid',     img:'/room-twin.jpg',    gallery: null },
-  { key:'eco',     usd:'$85',  kgs:'7 500', tier:'family',  img:'/room-eco.jpg',     gallery: null },
+  { key:'hostel',  usd:'$15',  kgs:'1 500', tier:'hostel',  img:'/gen/xl-room-hostel.webp', gallery: null,
+    amen:['am_shared','a10'] },
+  { key:'double',  usd:'$65',  kgs:'5 800', tier:'mid',     img:'/gen/xl-room-double.webp', gallery: null,
+    amen:['am_priv','am_view'], singleUsd:'$50', singleKgs:'4 500' },
+  { key:'twin',    usd:'$65',  kgs:'5 800', tier:'mid',     img:'/gen/xl-room-twin.webp',   gallery: null,
+    amen:['am_priv','am_heat'] },
+  { key:'eco',     usd:'$85',  kgs:'7 500', tier:'family',  img:'/gen/xl-room-eco.webp',    gallery: null,
+    amen:['am_priv','am_heat','am_view'] },
   {
     key:'summer',  usd:'$85',  kgs:'7 500', tier:'premium', img:'/summer4.jpg',
     gallery: {
       images: ['/summer4.jpg', '/summer1.jpg', '/summer2.jpg', '/summer3.jpg'],
       video: '/summer-video.mp4',
     },
+    amen:['am_terrace','am_priv','am_view'],
   },
-  { key:'lux',     usd:'$100', kgs:'8 800', tier:'premium', img:'/room-lux.jpg',     gallery: null },
-  { key:'yurt',    usd:'$100', kgs:'8 800', tier:'premium', img:'/room-yurt.jpg',    gallery: null },
+  { key:'lux',     usd:'$100', kgs:'8 800', tier:'premium', img:'/gen/xl-room-lux.webp',    gallery: null,
+    amen:['am_2rooms','am_priv','am_view'] },
+  { key:'yurt',    usd:'$100', kgs:'8 800', tier:'premium', img:'/gen/xl-room-yurt.webp',   gallery: null,
+    amen:['am_balcony','am_view'] },
 ];
 
 const TIER_BADGE: Record<string,string> = {
@@ -529,11 +551,21 @@ function Journey({ caption }: { caption: string }) {
           <circle r="5" cy="8" fill="#6B4226" />
         </g>
 
-        {/* labels */}
-        <text x="80" y="356" textAnchor="middle" style={label}>БИШКЕК · 750М</text>
-        <text x="720" y="104" textAnchor="middle" style={{ ...label, fill:'#6B4226' }}>АЛА-БЕЛ · 3175М</text>
-        <text x="1360" y="336" textAnchor="middle" style={{ ...label, fill:C.forest }}>ЧЫЧКАН · 2200М</text>
+        {/* labels — readable on desktop only; mobile gets the HTML row below */}
+        <g className="hidden sm:block">
+          <text x="80" y="356" textAnchor="middle" style={label}>БИШКЕК · 750М</text>
+          <text x="720" y="104" textAnchor="middle" style={{ ...label, fill:'#6B4226' }}>АЛА-БЕЛ · 3175М</text>
+          <text x="1360" y="336" textAnchor="middle" style={{ ...label, fill:C.forest }}>ЧЫЧКАН · 2200М</text>
+        </g>
       </svg>
+
+      <div className="flex sm:hidden items-center justify-between" aria-hidden="true"
+        style={{ fontFamily:F.sans, fontSize:'0.55rem', fontWeight:600, letterSpacing:'0.1em',
+          color:C.muted, marginTop:'0.4rem' }}>
+        <span>БИШКЕК · 750М</span>
+        <span style={{ color:'#6B4226' }}>АЛА-БЕЛ · 3175М</span>
+        <span style={{ color:C.forest }}>ЧЫЧКАН · 2200М</span>
+      </div>
 
       <p style={{ fontFamily:F.serif, fontStyle:'italic', fontSize:'0.95rem', color:C.mid,
         textAlign:'center', margin:'0.5rem 0 0' }}>
@@ -929,6 +961,283 @@ function Lightbox({ gallery, name, onClose }: { gallery: GalleryData; name: stri
   );
 }
 
+// ── WEBGL DEPTH HERO — the gorge shifts in 3D under the cursor ──
+// three.js is loaded lazily so it never blocks first paint; on mobile,
+// reduced-motion, or missing WebGL the static image simply stays.
+function DepthHero() {
+  const wrap = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = wrap.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(pointer: coarse)').matches) return;
+
+    let disposed = false;
+    let cleanup: (() => void) | undefined;
+
+    import('three').then(THREE => {
+      if (disposed) return;
+      let renderer: InstanceType<typeof THREE.WebGLRenderer>;
+      try {
+        renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+      } catch {
+        return; // no WebGL — fallback image remains
+      }
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0, 1);
+      const loader = new THREE.TextureLoader();
+      const uniforms = {
+        uImg:   { value: loader.load(asset('/gen/g-hero.webp')) },
+        uDepth: { value: loader.load(asset('/gen/g-hero-depth.webp')) },
+        uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+        uTime:  { value: 0 },
+        uCover: { value: new THREE.Vector4(1, 1, 0, 0) }, // scale.xy, offset.xy
+      };
+
+      const mat = new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: `
+          varying vec2 vUv;
+          void main() { vUv = uv; gl_Position = vec4(position.xy * 2.0, 0.0, 1.0); }`,
+        fragmentShader: `
+          uniform sampler2D uImg, uDepth;
+          uniform vec2 uMouse;
+          uniform float uTime;
+          uniform vec4 uCover;
+          varying vec2 vUv;
+          void main() {
+            vec2 uv = vUv * uCover.xy + uCover.zw;
+            float d = texture2D(uDepth, uv).r;
+            vec2 sway = vec2(sin(uTime * 0.22), cos(uTime * 0.17)) * 0.006;
+            vec2 off = (uMouse - 0.5) * vec2(0.045, 0.03) * d + sway * d;
+            gl_FragColor = texture2D(uImg, uv + off);
+          }`,
+      });
+      scene.add(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat));
+
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+      el.appendChild(renderer.domElement);
+      Object.assign(renderer.domElement.style, {
+        position: 'absolute', inset: '0', width: '100%', height: '100%',
+        opacity: '0', transition: 'opacity 1.2s ease',
+      });
+      uniforms.uImg.value.colorSpace = THREE.SRGBColorSpace;
+
+      const IMG_AR = 16 / 9; // g-hero aspect
+      const fit = () => {
+        const w = el.offsetWidth, h = el.offsetHeight;
+        renderer.setSize(w, h, false);
+        const ar = w / h;
+        // cover-fit uv transform (like background-size: cover)
+        if (ar > IMG_AR) uniforms.uCover.value.set(1, IMG_AR / ar, 0, (1 - IMG_AR / ar) / 2);
+        else             uniforms.uCover.value.set(ar / IMG_AR, 1, (1 - ar / IMG_AR) / 2, 0);
+      };
+      fit();
+      window.addEventListener('resize', fit);
+
+      const target = { x: 0.5, y: 0.5 };
+      const onMouse = (e: MouseEvent) => {
+        target.x = e.clientX / window.innerWidth;
+        target.y = 1 - e.clientY / window.innerHeight;
+      };
+      window.addEventListener('mousemove', onMouse, { passive: true });
+
+      let raf = 0;
+      let shown = false;
+      const tick = (t: number) => {
+        uniforms.uTime.value = t / 1000;
+        const m = uniforms.uMouse.value;
+        m.x += (target.x - m.x) * 0.045;
+        m.y += (target.y - m.y) * 0.045;
+        renderer.render(scene, camera);
+        if (!shown && uniforms.uImg.value.image && uniforms.uDepth.value.image) {
+          renderer.domElement.style.opacity = '1';
+          shown = true;
+        }
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+
+      cleanup = () => {
+        cancelAnimationFrame(raf);
+        window.removeEventListener('resize', fit);
+        window.removeEventListener('mousemove', onMouse);
+        renderer.dispose();
+        el.removeChild(renderer.domElement);
+      };
+    });
+
+    return () => { disposed = true; cleanup?.(); };
+  }, []);
+
+  return <div ref={wrap} className="absolute inset-0" aria-hidden="true" />;
+}
+
+// ── ATMOSPHERE CANVAS — drifting mist or fireflies ───────────
+function Atmosphere({ mode }: { mode: 'mist' | 'fireflies' }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const cv = ref.current;
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    if (!ctx) return;
+
+    let w = (cv.width = cv.offsetWidth);
+    let h = (cv.height = cv.offsetHeight);
+    let raf = 0;
+    let t = 0;
+
+    const mist = mode === 'mist';
+    const parts = Array.from({ length: mist ? 12 : 42 }, () => ({
+      x: Math.random() * w,
+      y: mist ? h * (0.35 + Math.random() * 0.6) : Math.random() * h,
+      r: mist ? 90 + Math.random() * 170 : 0.8 + Math.random() * 1.7,
+      s: mist ? 0.06 + Math.random() * 0.16 : 0.1 + Math.random() * 0.25,
+      ph: Math.random() * Math.PI * 2,
+      o: mist ? 0.04 + Math.random() * 0.08 : 0.3 + Math.random() * 0.5,
+    }));
+
+    const onResize = () => { w = cv.width = cv.offsetWidth; h = cv.height = cv.offsetHeight; };
+    window.addEventListener('resize', onResize);
+
+    const tick = () => {
+      t += 0.008;
+      ctx.clearRect(0, 0, w, h);
+      for (const p of parts) {
+        p.x += p.s;
+        if (p.x - p.r > w) p.x = -p.r;
+        if (mist) {
+          const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+          g.addColorStop(0, `rgba(247,242,232,${p.o})`);
+          g.addColorStop(1, 'rgba(247,242,232,0)');
+          ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+        } else {
+          const y = p.y + Math.sin(t * 2 + p.ph) * 14;
+          const glow = p.o * (0.45 + 0.55 * Math.sin(t * 3 + p.ph * 2) ** 2);
+          ctx.fillStyle = `rgba(223,192,122,${glow})`;
+          ctx.beginPath(); ctx.arc(p.x, y, p.r, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); };
+  }, [mode]);
+
+  return <canvas ref={ref} className="absolute inset-0"
+    style={{ width:'100%', height:'100%', pointerEvents:'none' }} aria-hidden="true" />;
+}
+
+// ── ROOM DETAIL SHEET ─────────────────────────────────────────
+function RoomSheet({ room, tr, onClose, onGallery }: {
+  room: (typeof ROOMS)[number]; tr: Record<string, string>;
+  onClose: () => void; onGallery: () => void;
+}) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    document.body.style.overflow = 'hidden';
+    return () => { window.removeEventListener('keydown', handler); document.body.style.overflow = ''; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <motion.div className="fixed inset-0 z-[500] flex items-end sm:items-center justify-center"
+      style={{ background:'rgba(10,18,12,0.9)', backdropFilter:'blur(6px)' }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={onClose}>
+      <motion.div onClick={e => e.stopPropagation()}
+        initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+        transition={{ type:'spring', stiffness: 160, damping: 22 }}
+        style={{ background:C.white, width:'100%', maxWidth:520, maxHeight:'92vh',
+          overflowY:'auto', position:'relative' }}>
+
+        <button onClick={onClose} aria-label="Close"
+          style={{ position:'absolute', top:10, right:10, zIndex:2, width:36, height:36,
+            display:'flex', alignItems:'center', justifyContent:'center',
+            background:'rgba(15,35,24,0.65)', color:C.cream, border:'none',
+            cursor:'pointer', backdropFilter:'blur(4px)' }}>
+          <X size={18} />
+        </button>
+
+        <div style={{ position:'relative' }}>
+          <img src={asset(room.img)} alt={tr[room.key]}
+            style={{ width:'100%', aspectRatio:'16/10', objectFit:'cover', display:'block' }} />
+          {room.gallery && (
+            <button onClick={onGallery}
+              style={{ position:'absolute', bottom:12, right:12, display:'flex',
+                alignItems:'center', gap:6, background:'rgba(15,35,24,0.8)', color:C.cream,
+                border:'none', cursor:'pointer', padding:'0.45rem 0.8rem',
+                fontFamily:F.sans, fontSize:'0.6rem', fontWeight:600,
+                letterSpacing:'0.12em', textTransform:'uppercase', backdropFilter:'blur(4px)' }}>
+              <Play size={11} fill="currentColor" />
+              {room.gallery.images.length + 1}
+            </button>
+          )}
+        </div>
+
+        <div style={{ padding:'1.5rem 1.6rem 1.75rem' }}>
+          <span style={{ fontFamily:F.sans, fontSize:'0.55rem', fontWeight:700,
+            letterSpacing:'0.15em', textTransform:'uppercase', color:C.gold }}>
+            {tr[`t_${room.tier}`] ?? room.tier}
+          </span>
+          <h3 style={{ fontFamily:F.serif, fontSize:'1.8rem', fontWeight:500,
+            color:C.deep, margin:'0.25rem 0 1rem', lineHeight:1.1 }}>
+            {tr[room.key]}
+          </h3>
+
+          <div className="flex items-center gap-2 mb-3"
+            style={{ fontFamily:F.sans, fontSize:'0.75rem', color:C.muted }}>
+            <Users size={14} style={{ color:C.gold }} />
+            {tr[`cap_${room.key}`]}
+          </div>
+
+          <ul style={{ listStyle:'none', margin:'0 0 1.25rem', padding:0,
+            display:'grid', gap:'0.45rem' }}>
+            {[...room.amen, 'bb', 'a8'].map(k => (
+              <li key={k} className="flex items-center gap-2"
+                style={{ fontFamily:F.sans, fontSize:'0.78rem', fontWeight:300, color:C.muted }}>
+                <Check size={13} style={{ color:C.mid, flexShrink:0 }} />
+                {tr[k]}
+              </li>
+            ))}
+          </ul>
+
+          {room.singleUsd && (
+            <p style={{ fontFamily:F.sans, fontSize:'0.68rem', fontStyle:'italic',
+              color:C.muted, marginBottom:'1rem' }}>
+              {tr.double_single}
+            </p>
+          )}
+
+          <div style={{ borderTop:`1px solid ${C.creamD}`, paddingTop:'1.1rem',
+            display:'flex', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
+            <div>
+              <span style={{ fontFamily:F.serif, fontSize:'1.7rem', fontWeight:600,
+                color:C.forest, lineHeight:1 }}>
+                {room.usd}
+                <small style={{ fontFamily:F.sans, fontSize:'0.6rem', fontWeight:300,
+                  color:C.muted, marginLeft:3 }}>{tr.per_night}</small>
+              </span>
+              <span style={{ display:'block', fontFamily:F.sans, fontSize:'0.65rem',
+                color:C.muted, marginTop:2 }}>{room.kgs} KGS · {tr.bb}</span>
+            </div>
+            <a href={WA} target="_blank" rel="noopener noreferrer"
+              style={{ fontFamily:F.sans, background:C.gold, color:C.deep, fontSize:'0.6rem',
+                fontWeight:700, letterSpacing:'0.14em', textTransform:'uppercase',
+                padding:'0.85rem 1.3rem', textDecoration:'none', whiteSpace:'nowrap' }}>
+              {tr.rd_book_room}
+            </a>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ── MAIN ──────────────────────────────────────────────────────
 export default function Page() {
   const [lang, setLang]           = useState<Lang>('ky');
@@ -939,6 +1248,8 @@ export default function Page() {
   const [activeSec, setActiveSec] = useState('');
   const [hoverDish, setHoverDish] = useState<string | null>(null);
   const [dishPos, setDishPos]     = useState({ x: 0, y: 0 });
+  const [roomSheet, setRoomSheet] = useState<string | null>(null);
+  const sheetRoom = roomSheet ? ROOMS.find(r => r.key === roomSheet) : undefined;
   const wx = useGorgeWeather();
   const tr = T[lang];
 
@@ -1107,6 +1418,17 @@ export default function Page() {
         <Lightbox gallery={lightbox.gallery} name={lightbox.name} onClose={() => setLightbox(null)} />
       )}
 
+      {sheetRoom && (
+        <RoomSheet room={sheetRoom} tr={tr}
+          onClose={() => setRoomSheet(null)}
+          onGallery={() => {
+            if (sheetRoom.gallery) {
+              setLightbox({ gallery: sheetRoom.gallery, name: tr[sheetRoom.key] });
+              setRoomSheet(null);
+            }
+          }} />
+      )}
+
       {menuOpen && (
         <div className="fixed inset-0 z-[100] flex flex-col"
           style={{ background: C.deep }}>
@@ -1155,18 +1477,25 @@ export default function Page() {
       <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden"
         aria-label="Hero section">
 
-        {/* Background — Ken Burns photo, scroll-parallaxed.
-            Extended above the viewport so the parallax shift never exposes an edge. */}
+        {/* Background — scroll-parallaxed. Static Ken Burns photo as base;
+            on desktop a WebGL depth-parallax layer fades in over it and the
+            gorge shifts in 3D under the cursor. */}
         <motion.div className="absolute inset-0" style={{ y: heroY, willChange:'transform' }}>
-          <div className="hero-bg"
-            style={{ position:'absolute', left:0, right:0, top:'-20%', height:'125%',
-              backgroundImage:`url('${asset('/hero-bg.webp')}')`,
-              backgroundSize:'cover', backgroundPosition:'center' }} />
+          <div style={{ position:'absolute', left:0, right:0, top:'-20%', height:'125%' }}>
+            <div className="hero-bg"
+              style={{ position:'absolute', inset:0,
+                backgroundImage:`url('${asset('/gen/g-hero.webp')}')`,
+                backgroundSize:'cover', backgroundPosition:'center' }} />
+            <DepthHero />
+          </div>
         </motion.div>
 
         {/* Gradient overlay */}
         <div className="absolute inset-0"
           style={{ background:'linear-gradient(to bottom, rgba(10,20,12,0.55) 0%, rgba(10,20,12,0.28) 45%, rgba(10,20,12,0.85) 100%)' }} />
+
+        {/* Living mist */}
+        <Atmosphere mode="mist" />
 
         {/* Gold inset frame */}
         <motion.div aria-hidden="true" className="absolute z-10 pointer-events-none hidden md:block"
@@ -1389,13 +1718,13 @@ export default function Page() {
                 style={{ background:C.white, overflow:'hidden',
                   boxShadow:'0 2px 16px rgba(0,0,0,0.08)' }}
               >
-                {/* Image */}
+                {/* Image — opens the room detail sheet */}
                 <div
                   style={{ position:'relative', background:C.creamD, overflow:'hidden',
-                    cursor: room.gallery ? 'pointer' : 'default' }}
-                  onClick={() => room.gallery && setLightbox({ gallery: room.gallery, name: tr[room.key] })}
-                  role={room.gallery ? 'button' : undefined}
-                  aria-label={room.gallery ? `View ${tr[room.key]} gallery` : undefined}
+                    cursor:'pointer' }}
+                  onClick={() => setRoomSheet(room.key)}
+                  role="button"
+                  aria-label={`${tr.rd_details}: ${tr[room.key]}`}
                 >
                   <span style={{ position:'absolute', top:10, left:10, zIndex:1,
                     fontFamily:F.sans, fontSize:'0.55rem', fontWeight:700,
@@ -1419,7 +1748,8 @@ export default function Page() {
                     </div>
                   )}
                   <img src={asset(room.img)} alt={tr[room.key]}
-                    style={{ width:'100%', height:'auto', display:'block', transition:'transform 0.6s' }}
+                    style={{ width:'100%', aspectRatio:'4/3', objectFit:'cover',
+                      display:'block', transition:'transform 0.6s' }}
                     loading="lazy"
                     onMouseEnter={e => (e.currentTarget.style.transform='scale(1.02)')}
                     onMouseLeave={e => (e.currentTarget.style.transform='')}
@@ -1480,7 +1810,7 @@ export default function Page() {
         position:'relative', overflow:'hidden' }}>
         {/* faint valley photo behind the menu */}
         <div aria-hidden="true" style={{ position:'absolute', inset:0,
-          backgroundImage:`url('${asset('/kyrgyzstan-bg.jpg')}')`,
+          backgroundImage:`url('${asset('/gen/g-jailoo.webp')}')`,
           backgroundSize:'cover', backgroundPosition:'center', opacity:0.07 }} />
 
         <div className="relative z-10 max-w-2xl mx-auto text-center">
@@ -1523,7 +1853,7 @@ export default function Page() {
             {/* floating dish photo (desktop only, decorative) */}
             <motion.img
               className="hidden md:block"
-              src={hoverDish ? asset(`/gen/dish-${
+              src={hoverDish ? asset(`/gen/g-dish-${
                 ({ r1:'beshbarmak', r2:'trout', r3:'samsa', r4:'shashlik', r5:'boorsok', r6:'kymyz' })[hoverDish]
               }.webp`) : undefined}
               alt=""
@@ -1634,10 +1964,10 @@ export default function Page() {
         <div className="gallery-track" style={{ display:'flex', gap:'1rem', width:'max-content' }}>
           {(() => {
             const shots = [
-              '/summer1.jpg', '/gen/scenic-river.webp', '/kyrgyzstan-bg.jpg',
-              '/gen/scenic-horses.webp', '/summer2.jpg', '/gen/scenic-forest.webp',
-              '/hero-bg.webp', '/gen/scenic-yurt.webp', '/summer3.jpg',
-              '/gen/scenic-night.webp', '/summer4.jpg', '/gen/scenic-berries.webp',
+              '/summer1.jpg', '/gen/g-river.webp', '/gen/g-jailoo.webp',
+              '/summer2.jpg', '/gen/g-forest.webp', '/gen/g-hero.webp',
+              '/gen/xl-room-yurt.webp', '/summer3.jpg', '/gen/g-night.webp',
+              '/summer4.jpg', '/gen/g-berries.webp',
             ];
             return [...shots, ...shots].map((src, i) => (
               <img key={i} src={asset(src)} alt="" loading="lazy"
@@ -1770,6 +2100,7 @@ export default function Page() {
       <section style={{ position:'relative', padding:'8rem 1.5rem',
         textAlign:'center', overflow:'hidden', background:C.deep }}>
         <NightScene />
+        <Atmosphere mode="fireflies" />
 
         <div className="relative z-10 max-w-2xl mx-auto">
           <div className="flex justify-center mb-6" aria-hidden="true">
