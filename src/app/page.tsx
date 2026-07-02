@@ -19,6 +19,7 @@ const C = {
   gold:   '#C9A052',
   goldL:  '#DFC07A',
   brown:  '#6B4226',
+  red:    '#A63A2B', // shyrdak felt-carpet red — sparing accent
   cream:  '#F7F2E8',
   creamD: '#EDE5D0',
   white:  '#FDFAF5',
@@ -268,7 +269,7 @@ const TIER_BADGE: Record<string,string> = {
   hostel:  `background:${C.forest};color:${C.cream}`,
   mid:     `background:${C.brown};color:${C.cream}`,
   family:  `background:${C.mid};color:${C.cream}`,
-  premium: `background:${C.gold};color:${C.deep}`,
+  premium: `background:${C.red};color:${C.cream}`,
 };
 
 // ── ACTIVITIES ────────────────────────────────────────────────
@@ -1737,6 +1738,12 @@ export default function Page() {
                     )) }}>
                     {tr[`t_${room.tier}`] ?? room.tier}
                   </span>
+                  {/* Editorial index */}
+                  <span aria-hidden="true" style={{ position:'absolute', top:6, right:12, zIndex:1,
+                    fontFamily:F.serif, fontStyle:'italic', fontSize:'1.6rem', fontWeight:600,
+                    color:C.cream, opacity:0.85, textShadow:'0 2px 10px rgba(0,0,0,0.45)' }}>
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                   {/* Gallery badge */}
                   {room.gallery && (
                     <div style={{ position:'absolute', bottom:10, right:10, zIndex:1,
@@ -1930,7 +1937,13 @@ export default function Page() {
                   if (ico) ico.style.color = C.gold;
                 }}
               >
-                <Icon size={22} className="act-icon" style={{ color:C.gold, transition:'color 0.3s' }} />
+                <div className="flex items-start justify-between">
+                  <Icon size={22} className="act-icon" style={{ color:C.gold, transition:'color 0.3s' }} />
+                  <span aria-hidden="true" style={{ fontFamily:F.serif, fontStyle:'italic',
+                    fontSize:'0.85rem', fontWeight:600, color:C.red, opacity:0.45 }}>
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                </div>
                 <div>
                   <p className="act-title" style={{ fontFamily:F.serif, fontSize:'1.1rem',
                     fontWeight:500, color:C.deep, transition:'color 0.3s', marginBottom:'0.25rem' }}>
