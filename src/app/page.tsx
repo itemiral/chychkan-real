@@ -252,9 +252,9 @@ const ROOMS: {
   { key:'eco',     usd:'$85',  kgs:'7 500', tier:'family',  img:'/gen/xl-room-eco.webp',    gallery: null,
     amen:['am_priv','am_heat','am_view'] },
   {
-    key:'summer',  usd:'$85',  kgs:'7 500', tier:'premium', img:'/summer4.jpg',
+    key:'summer',  usd:'$85',  kgs:'7 500', tier:'premium', img:'/summer4.webp',
     gallery: {
-      images: ['/summer4.jpg', '/summer1.jpg', '/summer2.jpg', '/summer3.jpg'],
+      images: ['/summer4.webp', '/summer1.webp', '/summer2.webp', '/summer3.webp'],
       video: '/summer-video.mp4',
     },
     amen:['am_terrace','am_priv','am_view'],
@@ -1977,10 +1977,10 @@ export default function Page() {
         <div className="gallery-track" style={{ display:'flex', gap:'1rem', width:'max-content' }}>
           {(() => {
             const shots = [
-              '/summer1.jpg', '/gen/g-river.webp', '/gen/g-jailoo.webp',
-              '/summer2.jpg', '/gen/g-forest.webp', '/gen/g-hero.webp',
-              '/gen/xl-room-yurt.webp', '/summer3.jpg', '/gen/g-night.webp',
-              '/summer4.jpg', '/gen/g-berries.webp',
+              '/summer1.webp', '/gen/g-river.webp', '/gen/g-jailoo.webp',
+              '/summer2.webp', '/gen/g-forest.webp', '/gen/g-hero.webp',
+              '/gen/xl-room-yurt.webp', '/summer3.webp', '/gen/g-night.webp',
+              '/summer4.webp', '/gen/g-berries.webp',
             ];
             return [...shots, ...shots].map((src, i) => (
               <img key={i} src={asset(src)} alt="" loading="lazy"
