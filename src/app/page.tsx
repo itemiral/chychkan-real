@@ -5,7 +5,7 @@ import {
   UtensilsCrossed, Droplets, Mountain, Fish, Leaf,
   Flame, Car, Coffee, Wifi, Clock, Compass, MapPin,
   ArrowRight, Menu, X, ChevronLeft, ChevronRight, Play, Plus, Check, Users,
-  Sun, Cloud, CloudRain, CloudSnow, CloudFog, CloudLightning,
+  Sun, Cloud, CloudRain, CloudSnow, CloudFog, CloudLightning, Volume2, VolumeX,
 } from 'lucide-react';
 
 // ── TYPES ─────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ const T: Record<Lang, Record<string, string>> = {
     about_p1:'Чычкан комплекси Бишкек-Ош автожолундагы Ала-Бел ашуусунун арт жагында, деңиз деңгээлинен 2200 метр бийиктикте жайгашкан.',
     about_p2:'Кристалл таза суу, тоо абасы, чексиз жашыл токой — табигат менен биригүүнүн мыкты жери.',
     s_alt:'Деңиз деңгээлинен', s_km:'Бишкектен', s_yr:'Ачылган жыл', s_bb:'Эртең мен кирет',
-    seasons_l:'сезон',
+    seasons_l:'сезон', snd:'Дарыянын добушу',
     rooms_label:'Жайлоо', rooms_title:'Бөлмөлөр жана Баалар',
     bb:'Эртең мен кирет', per_night:'/түн', book:'Брондоо',
     hostel:'Жатакана', double:'Дабл', twin:'Твин', eco:'Экологиялык Үй', summer:'Жайкы Үй', lux:'Люкс (2 бөлмө)', yurt:'Балкондуу Юрта',
@@ -114,7 +114,7 @@ const T: Record<Lang, Record<string, string>> = {
     about_p1:'Комплекс «Чычкан» расположен на трассе Бишкек–Ош, за перевалом Ала-Бел, на высоте 2200 метров над уровнем моря.',
     about_p2:'Кристально чистые реки, горный воздух, бескрайние леса — лучшее место для единения с природой.',
     s_alt:'Над уровнем моря', s_km:'От Бишкека', s_yr:'Год основания', s_bb:'Завтрак включён',
-    seasons_l:'сезонов',
+    seasons_l:'сезонов', snd:'Звук реки',
     rooms_label:'Проживание', rooms_title:'Номера и цены',
     bb:'Завтрак включён', per_night:'/ночь', book:'Забронировать',
     hostel:'Хостел', double:'Дабл', twin:'Твин', eco:'Эко Домик', summer:'Летник', lux:'Люкс (2 комнаты)', yurt:'Юрта с Балконом',
@@ -182,7 +182,7 @@ const T: Record<Lang, Record<string, string>> = {
     about_p1:'Touristic Complex Chychkan sits on the Bishkek–Osh highway, past the Ala-Bel pass, at 2,200m above sea level.',
     about_p2:'Crystal rivers, mountain air, endless forest — the finest place to reconnect with nature.',
     s_alt:'Above sea level', s_km:'From Bishkek', s_yr:'Founded', s_bb:'Breakfast included',
-    seasons_l:'seasons',
+    seasons_l:'seasons', snd:'River sound',
     rooms_label:'Accommodation', rooms_title:'Rooms & Rates',
     bb:'Breakfast included', per_night:'/night', book:'Book Now',
     hostel:'Hostel Room', double:'Double Room', twin:'Twin Room', eco:'Eco House', summer:'Summer House', lux:'Lux (2 rooms)', yurt:'Yurt with Balcony',
@@ -467,6 +467,72 @@ function Panorama() {
       </div>
     </section>
   );
+}
+
+// ── RIVER AMBIENCE — synthesized with WebAudio, no audio files ──
+// Two noise layers: brown-noise rumble through a slowly-wandering lowpass
+// (the river body) and a quiet band-passed hiss (the spray).
+function useRiverSound() {
+  const ctxRef  = useRef<AudioContext | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
+  const [on, setOn] = useState(false);
+
+  const toggle = () => {
+    if (!on) {
+      if (!ctxRef.current) {
+        const ctx = new AudioContext();
+        const master = ctx.createGain();
+        master.gain.value = 0;
+        master.connect(ctx.destination);
+
+        const noiseBuffer = (brown: boolean) => {
+          const len = ctx.sampleRate * 4;
+          const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+          const d = buf.getChannelData(0);
+          let last = 0;
+          for (let i = 0; i < len; i++) {
+            const w = Math.random() * 2 - 1;
+            if (brown) { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; }
+            else d[i] = w;
+          }
+          return buf;
+        };
+
+        // river body
+        const body = ctx.createBufferSource();
+        body.buffer = noiseBuffer(true); body.loop = true;
+        const lp = ctx.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.value = 520; lp.Q.value = 0.4;
+        body.connect(lp); lp.connect(master); body.start();
+
+        // spray hiss
+        const spray = ctx.createBufferSource();
+        spray.buffer = noiseBuffer(false); spray.loop = true;
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass'; bp.frequency.value = 1900; bp.Q.value = 0.7;
+        const sprayGain = ctx.createGain(); sprayGain.gain.value = 0.10;
+        spray.connect(bp); bp.connect(sprayGain); sprayGain.connect(master); spray.start();
+
+        // slow wandering of the water
+        const lfo = ctx.createOscillator(); lfo.frequency.value = 0.11;
+        const lfoAmp = ctx.createGain(); lfoAmp.gain.value = 210;
+        lfo.connect(lfoAmp); lfoAmp.connect(lp.frequency); lfo.start();
+
+        ctxRef.current = ctx; gainRef.current = master;
+      }
+      ctxRef.current.resume();
+      gainRef.current?.gain.setTargetAtTime(0.16, ctxRef.current.currentTime, 1.4);
+      setOn(true);
+    } else {
+      if (ctxRef.current && gainRef.current) {
+        gainRef.current.gain.setTargetAtTime(0, ctxRef.current.currentTime, 0.4);
+        const ctx = ctxRef.current;
+        setTimeout(() => { void ctx.suspend(); }, 1400);
+      }
+      setOn(false);
+    }
+  };
+  return { on, toggle };
 }
 
 // ── LIVE GORGE WEATHER (Open-Meteo, no key, fails silently) ──
@@ -1254,6 +1320,7 @@ export default function Page() {
   const [dishPos, setDishPos]     = useState({ x: 0, y: 0 });
   const [roomSheet, setRoomSheet] = useState<string | null>(null);
   const sheetRoom = roomSheet ? ROOMS.find(r => r.key === roomSheet) : undefined;
+  const river = useRiverSound();
   const wx = useGorgeWeather();
   const tr = T[lang];
 
@@ -1389,8 +1456,15 @@ export default function Page() {
             })}
           </nav>
 
-          {/* Right: lang + book */}
+          {/* Right: sound + lang + book */}
           <div className="hidden md:flex items-center gap-4">
+            <button onClick={river.toggle} aria-label={tr.snd} aria-pressed={river.on}
+              title={tr.snd}
+              style={{ background:'none', border:'none', cursor:'pointer', padding:6,
+                color: river.on ? C.goldL : 'rgba(247,242,232,0.45)', transition:'color 0.2s',
+                display:'flex' }}>
+              {river.on ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            </button>
             <div className="flex overflow-hidden" style={{ border:`1px solid rgba(201,160,82,0.3)` }}>
               {(['ky','ru','en'] as Lang[]).map(l => (
                 <button key={l} onClick={() => setLang(l)}
