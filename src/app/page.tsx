@@ -46,6 +46,7 @@ const T: Record<Lang, Record<string, string>> = {
     about_p1:'Чычкан комплекси Бишкек-Ош автожолундагы Ала-Бел ашуусунун арт жагында, деңиз деңгээлинен 2200 метр бийиктикте жайгашкан.',
     about_p2:'Кристалл таза суу, тоо абасы, чексиз жашыл токой — табигат менен биригүүнүн мыкты жери.',
     s_alt:'Деңиз деңгээлинен', s_km:'Бишкектен', s_yr:'Ачылган жыл', s_bb:'Эртең мен кирет',
+    seasons_l:'сезон',
     rooms_label:'Жайлоо', rooms_title:'Бөлмөлөр жана Баалар',
     bb:'Эртең мен кирет', per_night:'/түн', book:'Брондоо',
     hostel:'Жатакана', double:'Дабл', twin:'Твин', eco:'Экологиялык Үй', summer:'Жайкы Үй', lux:'Люкс (2 бөлмө)', yurt:'Балкондуу Юрта',
@@ -113,6 +114,7 @@ const T: Record<Lang, Record<string, string>> = {
     about_p1:'Комплекс «Чычкан» расположен на трассе Бишкек–Ош, за перевалом Ала-Бел, на высоте 2200 метров над уровнем моря.',
     about_p2:'Кристально чистые реки, горный воздух, бескрайние леса — лучшее место для единения с природой.',
     s_alt:'Над уровнем моря', s_km:'От Бишкека', s_yr:'Год основания', s_bb:'Завтрак включён',
+    seasons_l:'сезонов',
     rooms_label:'Проживание', rooms_title:'Номера и цены',
     bb:'Завтрак включён', per_night:'/ночь', book:'Забронировать',
     hostel:'Хостел', double:'Дабл', twin:'Твин', eco:'Эко Домик', summer:'Летник', lux:'Люкс (2 комнаты)', yurt:'Юрта с Балконом',
@@ -180,6 +182,7 @@ const T: Record<Lang, Record<string, string>> = {
     about_p1:'Touristic Complex Chychkan sits on the Bishkek–Osh highway, past the Ala-Bel pass, at 2,200m above sea level.',
     about_p2:'Crystal rivers, mountain air, endless forest — the finest place to reconnect with nature.',
     s_alt:'Above sea level', s_km:'From Bishkek', s_yr:'Founded', s_bb:'Breakfast included',
+    seasons_l:'seasons',
     rooms_label:'Accommodation', rooms_title:'Rooms & Rates',
     bb:'Breakfast included', per_night:'/night', book:'Book Now',
     hostel:'Hostel Room', double:'Double Room', twin:'Twin Room', eco:'Eco House', summer:'Summer House', lux:'Lux (2 rooms)', yurt:'Yurt with Balcony',
@@ -943,8 +946,8 @@ function Lightbox({ gallery, name, onClose }: { gallery: GalleryData; name: stri
         {/* Counter + video hint */}
         <p style={{ fontFamily: F.sans, fontSize: '0.6rem', letterSpacing: '0.15em',
           color: 'rgba(247,242,232,0.4)', marginTop: '0.75rem', textTransform: 'uppercase' }}>
-          {isVideo ? '▶ Video' : `${idx + 1} / ${gallery.images.length}`}
-          {!isVideo && <span style={{ marginLeft: 12 }}>swipe or use ← →</span>}
+          {isVideo ? '▶' : `${idx + 1} / ${gallery.images.length}`}
+          {!isVideo && <span style={{ marginLeft: 12 }}>← →</span>}
         </p>
 
         {/* Mobile swipe */}
@@ -1253,6 +1256,9 @@ export default function Page() {
   const sheetRoom = roomSheet ? ROOMS.find(r => r.key === roomSheet) : undefined;
   const wx = useGorgeWeather();
   const tr = T[lang];
+
+  // keep the document language in sync for screen readers / SEO
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
   // highlight the nav link for the section in view
   useEffect(() => {
@@ -1682,9 +1688,11 @@ export default function Page() {
             <div className="absolute -bottom-5 -left-5 hidden md:flex flex-col items-center justify-center"
               style={{ width:90, height:90, background:C.forest,
                 boxShadow:'0 12px 40px rgba(0,0,0,0.2)' }}>
-              <strong style={{ fontFamily:F.serif, fontSize:'2rem', color:C.gold, lineHeight:1, fontWeight:600 }}>12+</strong>
+              <strong style={{ fontFamily:F.serif, fontSize:'2rem', color:C.gold, lineHeight:1, fontWeight:600 }}>
+                {new Date().getFullYear() - 2012}+
+              </strong>
               <span style={{ fontFamily:F.sans, fontSize:'0.5rem', letterSpacing:'0.15em',
-                textTransform:'uppercase', color:C.creamD, marginTop:2 }}>seasons</span>
+                textTransform:'uppercase', color:C.creamD, marginTop:2 }}>{tr.seasons_l}</span>
             </div>
           </div>
         </div>
@@ -1751,7 +1759,7 @@ export default function Page() {
                       padding:'0.25rem 0.6rem', display:'flex', alignItems:'center', gap:4,
                       fontFamily:F.sans, fontSize:'0.55rem', letterSpacing:'0.1em' }}>
                       <Play size={10} fill="currentColor" />
-                      {room.gallery.images.length + 1} photos
+                      {room.gallery.images.length + 1}
                     </div>
                   )}
                   <img src={asset(room.img)} alt={tr[room.key]}
@@ -2177,7 +2185,8 @@ export default function Page() {
               </span>
             </div>
           </div>
-          <nav className="flex gap-5" aria-label="Footer navigation">
+          <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer navigation"
+            style={{ whiteSpace:'nowrap' }}>
             {(['#about','#rooms','#activities','#location'] as const).map((href, i) => (
               <a key={href} href={href}
                 style={{ fontFamily:F.sans, fontSize:'0.6rem', letterSpacing:'0.12em',
