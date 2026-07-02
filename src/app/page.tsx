@@ -1470,7 +1470,8 @@ export default function Page() {
           <div className="hidden md:flex items-center gap-4">
             <button onClick={river.toggle} aria-label={tr.snd} aria-pressed={river.on}
               title={tr.snd}
-              style={{ background:'none', border:'none', cursor:'pointer', padding:6,
+              style={{ background:'none', border:'none', cursor:'pointer', padding:10,
+                minWidth:40, minHeight:40, alignItems:'center', justifyContent:'center',
                 color: river.on ? C.goldL : 'rgba(247,242,232,0.45)', transition:'color 0.2s',
                 display:'flex' }}>
               {river.on ? <Volume2 size={16} /> : <VolumeX size={16} />}
@@ -1478,8 +1479,9 @@ export default function Page() {
             <div className="flex overflow-hidden" style={{ border:`1px solid rgba(201,160,82,0.3)` }}>
               {(['ky','ru','en'] as Lang[]).map(l => (
                 <button key={l} onClick={() => setLang(l)}
+                  aria-pressed={lang === l}
                   style={{ fontFamily:F.sans, fontSize:'0.58rem', fontWeight:700,
-                    letterSpacing:'0.1em', padding:'0.35rem 0.6rem', border:'none', cursor:'pointer',
+                    letterSpacing:'0.1em', padding:'0.55rem 0.7rem', border:'none', cursor:'pointer',
                     background: lang===l ? C.gold : 'transparent',
                     color: lang===l ? C.deep : 'rgba(247,242,232,0.5)',
                     transition:'all 0.2s' }}

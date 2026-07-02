@@ -119,6 +119,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Clear, on-brand keyboard focus — mouse clicks stay outline-free */
+  :focus-visible {
+    outline: 2px solid #c9a052 !important;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
   body {
     @apply bg-background text-foreground;
   }
