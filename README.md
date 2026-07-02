@@ -16,11 +16,13 @@ WhatsApp only; the site is fully static.
 
 ## Imagery
 
-All photography under `public/gen/` is AI-generated (SDXL-Turbo, run locally),
-curated per image; the WebGL hero uses a Depth-Anything-V2 depth map
-(`g-hero-depth.webp`). SVG artwork (tunduk mark, panorama, night scene, menu
-icons) is hand-built in `page.tsx`. Real photos can replace any of these by
-swapping files — keep the same paths.
+All photography under `public/gen/` is AI-generated (SDXL-Turbo locally +
+FLUX/Sana via the Pollinations API), curated per image. The WebGL
+depth-parallax surfaces (hero, panorama band, night CTA) each pair an image
+with a Depth-Anything-V2 depth map (`*-depth.webp`). The two videos are
+AI footage restored/upscaled with Real-ESRGAN. SVG artwork (tunduk mark,
+journey strip, menu icons) is hand-built in `page.tsx`. Real photos can
+replace any of these by swapping files — keep the same paths.
 
 ## Develop
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useRef, type ReactNode, type CSSProperties } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'motion/react';
 import Lenis from 'lenis';
 import {
@@ -261,9 +261,10 @@ const ROOMS: {
   { key:'eco',     usd:'$85',  kgs:'7 500', tier:'family',  img:'/gen/xl-room-eco.webp',    gallery: null,
     amen:['am_priv','am_heat','am_view'] },
   {
-    key:'summer',  usd:'$85',  kgs:'7 500', tier:'premium', img:'/summer4.webp',
+    key:'summer',  usd:'$85',  kgs:'7 500', tier:'premium', img:'/gen/xl-summer-ext.webp',
     gallery: {
-      images: ['/summer4.webp', '/summer1.webp', '/summer2.webp', '/summer3.webp'],
+      images: ['/gen/xl-summer-ext.webp', '/gen/xl-summer-int.webp',
+               '/gen/xl-summer-ter.webp', '/gen/xl-summer-dsk.webp'],
       video: '/summer-video.mp4',
     },
     amen:['am_terrace','am_priv','am_view'],
@@ -285,7 +286,7 @@ const TIER_BADGE: Record<string,string> = {
 const ACTS: { icon: typeof Compass; tk: string; dk: string; img?: string }[] = [
   { icon: Compass,         tk:'a1', dk:'a1d', img:'/gen/g-jailoo.webp' },
   { icon: UtensilsCrossed, tk:'a2', dk:'a2d', img:'/gen/g-dish-samsa.webp' },
-  { icon: Droplets,        tk:'a3', dk:'a3d' },
+  { icon: Droplets,        tk:'a3', dk:'a3d', img:'/gen/g-sauna.webp' },
   { icon: Mountain,        tk:'a4', dk:'a4d', img:'/gen/g-forest.webp' },
   { icon: Fish,            tk:'a5', dk:'a5d', img:'/gen/g-river.webp' },
   { icon: Leaf,            tk:'a6', dk:'a6d', img:'/gen/g-berries.webp' },
@@ -350,116 +351,33 @@ function Watermark({ text }: { text: string }) {
   );
 }
 
-// ── ILLUSTRATED PANORAMA — generated artwork, 3 parallax layers ──
+// ── PANORAMA — photographic gorge band with depth parallax ────
 function Panorama() {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const yFar  = useTransform(scrollYProgress, [0, 1], [0,  reduce ? 0 : -34]);
-  const yMid  = useTransform(scrollYProgress, [0, 1], [18, reduce ? 18 : -58]);
-  const yNear = useTransform(scrollYProgress, [0, 1], [40, reduce ? 40 : -96]);
-
-  const layer = { position:'absolute' as const, left:0, right:0, top:-100, bottom:-100 };
-  const svgProps = {
-    viewBox: '0 0 1440 560',
-    preserveAspectRatio: 'xMidYMax slice' as const,
-    style: { width:'100%', height:'100%', display:'block' as const },
-    'aria-hidden': true as const,
-  };
+  const y = useTransform(scrollYProgress, [0, 1], ['-9%', '9%']);
 
   return (
     <section ref={ref} aria-hidden="true" className="relative overflow-hidden"
-      style={{ height:'clamp(340px,46vw,560px)', background:'#F2E8D2' }}>
+      style={{ height:'clamp(340px,46vw,560px)', background:C.deep }}>
 
-      {/* back — sky, sun, far ridge */}
-      <motion.div style={{ ...layer, y: yFar }}>
-        <svg {...svgProps}>
-          <defs>
-            <linearGradient id="pnSky" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#F7F2E8" />
-              <stop offset="0.55" stopColor="#F2E8D2" />
-              <stop offset="1" stopColor="#E9DFC2" />
-            </linearGradient>
-          </defs>
-          <rect width="1440" height="560" fill="url(#pnSky)" />
-          <circle cx="1064" cy="150" r="88" fill="#DFC07A" opacity="0.22" />
-          <circle cx="1064" cy="150" r="46" fill="#DFC07A" opacity="0.9" />
-          <path d="M520 120 q8 -8 16 0 M548 128 q7 -7 14 0 M300 168 q7 -7 14 0"
-            stroke="#2E5E47" strokeWidth="2" fill="none" opacity="0.45" strokeLinecap="round" />
-          <path d="M0 316 L150 208 L262 276 L420 170 L560 262 L730 186 L890 258 L1050 196 L1210 258 L1330 214 L1440 262 V560 H0 Z"
-            fill="#9FB9A4" />
-        </svg>
+      {/* the photograph — oversized so the scroll parallax never shows edges */}
+      <motion.div style={{ position:'absolute', left:0, right:0, top:'-12%', bottom:'-12%',
+        y: reduce ? 0 : y, willChange:'transform' }}>
+        <div style={{ position:'absolute', inset:0,
+          backgroundImage:`url('${asset('/gen/g-panorama.webp')}')`,
+          backgroundSize:'cover', backgroundPosition:'center' }} />
+        <DepthImage img="/gen/g-panorama.webp" depth="/gen/g-panorama-depth.webp"
+          ar={2048 / 800} shift={0.032} />
       </motion.div>
 
-      {/* mid — mountains, gold ridge light, mist */}
-      <motion.div style={{ ...layer, y: yMid }}>
-        <svg {...svgProps}>
-          <defs>
-            <filter id="pnBlur"><feGaussianBlur stdDeviation="16" /></filter>
-          </defs>
-          <path d="M0 372 L120 268 L250 342 L400 240 L540 330 L700 250 L860 336 L1020 262 L1180 340 L1310 288 L1440 344 V560 H0 Z"
-            fill="#4F7A5F" />
-          <path d="M400 240 L462 288 M700 250 L646 296 M1020 262 L1076 308"
-            stroke="#DFC07A" strokeWidth="1.5" opacity="0.55" />
-          <ellipse cx="720" cy="366" rx="540" ry="44" fill="#F7F2E8" opacity="0.32" filter="url(#pnBlur)" />
-        </svg>
-      </motion.div>
+      {/* soft blend into the neighbouring sections */}
+      <div style={{ position:'absolute', inset:0, pointerEvents:'none',
+        background:'linear-gradient(to bottom, rgba(15,35,24,0.3), transparent 24%, transparent 76%, rgba(15,35,24,0.38))' }} />
 
-      {/* near — dark hills, spruce forest, river, yurt, lodge */}
-      <motion.div style={{ ...layer, y: yNear }}>
-        <svg {...svgProps}>
-          <defs>
-            <linearGradient id="pnRiver" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#F7F2E8" stopOpacity="0.9" />
-              <stop offset="1" stopColor="#DFC07A" stopOpacity="0.75" />
-            </linearGradient>
-            <g id="pnTree">
-              <path d="M0 -64 L15 -36 L8 -36 L22 -10 L12 -10 L28 18 L-28 18 L-12 -10 L-22 -10 L-8 -36 L-15 -36 Z" />
-            </g>
-          </defs>
-
-          <path d="M0 430 Q220 392 430 424 T860 428 T1440 416 V560 H0 Z" fill="#1B3D2F" />
-
-          {/* river winding to the foreground */}
-          <path d="M708 420 C 680 452 760 466 726 494 C 690 524 800 536 764 560 L 872 560 C 830 528 928 512 888 488 C 850 464 760 454 744 420 Z"
-            fill="url(#pnRiver)" />
-
-          {/* yurt on the left bank */}
-          <g transform="translate(300 452)">
-            <path d="M-36 0 a36 24 0 0 1 72 0 z" fill="#EDE5D0" />
-            <path d="M-33 -9 h66" stroke="#C9A052" strokeWidth="1.4" opacity="0.7" />
-            <rect x="-8" y="-17" width="16" height="17" rx="1.5" fill="#6B4226" />
-            <circle cx="0" cy="-24" r="2.4" fill="#C9A052" />
-          </g>
-
-          {/* lodge on the right hill */}
-          <g transform="translate(1130 420)">
-            <path d="M-56 0 L0 -34 L56 0 Z" fill="#0F2318" />
-            <rect x="-46" y="0" width="92" height="34" fill="#16342A" />
-            <rect x="-26" y="10" width="13" height="13" fill="#DFC07A" opacity="0.9" />
-            <rect x="13" y="10" width="13" height="13" fill="#DFC07A" opacity="0.9" />
-          </g>
-
-          {/* mid-ground trees */}
-          <g fill="#163426">
-            <use href="#pnTree" transform="translate(90 470) scale(0.55)" />
-            <use href="#pnTree" transform="translate(190 466) scale(0.45)" />
-            <use href="#pnTree" transform="translate(1010 466) scale(0.5)" />
-            <use href="#pnTree" transform="translate(1330 470) scale(0.55)" />
-          </g>
-
-          {/* dark foreground */}
-          <path d="M0 478 Q260 448 520 472 T1040 476 T1440 464 V560 H0 Z" fill="#0F2318" />
-          <g fill="#0F2318">
-            <use href="#pnTree" transform="translate(60 540) scale(1.15)" />
-            <use href="#pnTree" transform="translate(160 548) scale(0.9)" />
-            <use href="#pnTree" transform="translate(245 542) scale(1.25)" />
-            <use href="#pnTree" transform="translate(1180 544) scale(1.05)" />
-            <use href="#pnTree" transform="translate(1280 550) scale(0.85)" />
-            <use href="#pnTree" transform="translate(1385 542) scale(1.2)" />
-          </g>
-        </svg>
-      </motion.div>
+      {/* drifting mist keeps the band alive */}
+      <Atmosphere mode="mist" />
 
       {/* etched caption */}
       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-3"
@@ -585,13 +503,6 @@ function Journey({ caption }: { caption: string }) {
       <svg viewBox="0 0 1440 400" style={{ width:'100%', height:'auto', display:'block' }}
         aria-hidden="true">
 
-        {/* faint backdrop ridges */}
-        <path d="M0 344 L200 268 L360 330 L540 220 L700 320 L900 240 L1080 328 L1240 274 L1440 336 V400 H0 Z"
-          fill="#2E5E47" opacity="0.08" />
-        {/* the pass mountain with snow cap */}
-        <path d="M552 336 L720 126 L888 336 Z" fill="#4F7A5F" opacity="0.22" />
-        <path d="M688 166 L720 126 L752 166 L736 158 L720 172 L704 158 Z" fill="#F7F2E8" />
-
         {/* base road (faint dashes) + road that draws itself */}
         <path d={ROAD_PATH} fill="none" stroke="rgba(107,66,38,0.3)" strokeWidth="3"
           strokeDasharray="1 10" strokeLinecap="round" />
@@ -648,55 +559,6 @@ function Journey({ caption }: { caption: string }) {
         {caption}
       </p>
     </div>
-  );
-}
-
-// ── NIGHT SCENE — generated starry-yurt artwork for the CTA ──
-function NightScene() {
-  // deterministic golden-angle star scatter — no randomness, stable across renders
-  const stars = Array.from({ length: 72 }, (_, i) => ({
-    x: Math.round(((i * 137.508) % 1440) * 10) / 10,
-    y: Math.round((((i * 97.31) % 270) + 12) * 10) / 10,
-    r: 0.5 + (i % 3) * 0.35,
-    o: 0.2 + ((i * 7) % 10) / 20,
-  }));
-  return (
-    <svg className="absolute inset-0" viewBox="0 0 1440 640" preserveAspectRatio="xMidYMax slice"
-      style={{ width:'100%', height:'100%', display:'block' }} aria-hidden="true">
-      <defs>
-        <linearGradient id="nsSky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#08130C" />
-          <stop offset="0.7" stopColor="#122B1E" />
-          <stop offset="1" stopColor="#1B3D2F" />
-        </linearGradient>
-        <radialGradient id="nsGlow">
-          <stop offset="0" stopColor="#DFC07A" stopOpacity="0.4" />
-          <stop offset="1" stopColor="#DFC07A" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <rect width="1440" height="640" fill="url(#nsSky)" />
-      {stars.map((s, i) => (
-        <circle key={i} className="star" cx={s.x} cy={s.y} r={s.r} fill="#F7F2E8" opacity={s.o} />
-      ))}
-      {/* crescent moon */}
-      <circle cx="1120" cy="104" r="32" fill="#EDE5D0" opacity="0.85" />
-      <circle cx="1134" cy="94" r="29" fill="#0A170F" />
-      {/* mountains */}
-      <path d="M0 420 L200 300 L360 396 L560 280 L760 388 L980 292 L1180 392 L1320 330 L1440 396 V640 H0 Z"
-        fill="#0C1B12" />
-      <path d="M0 520 Q360 488 720 512 T1440 508 V640 H0 Z" fill="#08130C" />
-      {/* glowing yurt — someone is home */}
-      <g transform="translate(720 520)">
-        <circle cx="0" cy="-10" r="130" fill="url(#nsGlow)" />
-        <path d="M-58 0 a58 36 0 0 1 116 0 z" fill="#101E15" stroke="#C9A052" strokeOpacity="0.4" />
-        <path d="M-52 -14 h104" stroke="#C9A052" strokeWidth="1" opacity="0.3" />
-        <rect x="-13" y="-27" width="26" height="27" rx="2" fill="#DFC07A" opacity="0.95" />
-        <circle cx="0" cy="-38" r="3" fill="#C9A052" />
-        {/* smoke */}
-        <path d="M0 -44 q-6 -10 2 -18 q8 -8 2 -18" stroke="rgba(247,242,232,0.35)"
-          strokeWidth="2" fill="none" strokeLinecap="round" strokeDasharray="1 7" />
-      </g>
-    </svg>
   );
 }
 
@@ -1037,116 +899,156 @@ function Lightbox({ gallery, name, onClose }: { gallery: GalleryData; name: stri
   );
 }
 
-// ── WEBGL DEPTH HERO — the gorge shifts in 3D under the cursor ──
-// three.js is loaded lazily so it never blocks first paint; on mobile,
-// reduced-motion, or missing WebGL the static image simply stays.
-function DepthHero() {
+// ── WEBGL DEPTH IMAGE — a photo that shifts in 3D under the cursor ──
+// The WebGL scene (and three.js itself) is only built when the element first
+// approaches the viewport, and the render loop fully stops while it is
+// offscreen. On mobile, reduced-motion, or missing WebGL the static image
+// underneath simply stays.
+function DepthImage({ img, depth, ar, shift = 0.045 }: {
+  img: string; depth: string; ar: number; shift?: number;
+}) {
   const wrap = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = wrap.current;
     if (!el) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mql.matches) return;
     if (window.matchMedia('(pointer: coarse)').matches) return;
 
     let disposed = false;
     let cleanup: (() => void) | undefined;
+    let inView = false;
+    let started = false;
+    let resume: (() => void) | null = null;
 
-    import('three').then(THREE => {
-      if (disposed) return;
-      let renderer: InstanceType<typeof THREE.WebGLRenderer>;
-      try {
-        renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
-      } catch {
-        return; // no WebGL — fallback image remains
-      }
-
-      const scene = new THREE.Scene();
-      const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0, 1);
-      const loader = new THREE.TextureLoader();
-      const uniforms = {
-        uImg:   { value: loader.load(asset('/gen/g-hero.webp')) },
-        uDepth: { value: loader.load(asset('/gen/g-hero-depth.webp')) },
-        uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-        uTime:  { value: 0 },
-        uCover: { value: new THREE.Vector4(1, 1, 0, 0) }, // scale.xy, offset.xy
-      };
-
-      const mat = new THREE.ShaderMaterial({
-        uniforms,
-        vertexShader: `
-          varying vec2 vUv;
-          void main() { vUv = uv; gl_Position = vec4(position.xy * 2.0, 0.0, 1.0); }`,
-        fragmentShader: `
-          uniform sampler2D uImg, uDepth;
-          uniform vec2 uMouse;
-          uniform float uTime;
-          uniform vec4 uCover;
-          varying vec2 vUv;
-          void main() {
-            vec2 uv = vUv * uCover.xy + uCover.zw;
-            float d = texture2D(uDepth, uv).r;
-            vec2 sway = vec2(sin(uTime * 0.22), cos(uTime * 0.17)) * 0.006;
-            vec2 off = (uMouse - 0.5) * vec2(0.045, 0.03) * d + sway * d;
-            gl_FragColor = texture2D(uImg, uv + off);
-          }`,
-      });
-      scene.add(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat));
-
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
-      el.appendChild(renderer.domElement);
-      Object.assign(renderer.domElement.style, {
-        position: 'absolute', inset: '0', width: '100%', height: '100%',
-        opacity: '0', transition: 'opacity 1.2s ease',
-      });
-      uniforms.uImg.value.colorSpace = THREE.SRGBColorSpace;
-
-      const IMG_AR = 16 / 9; // g-hero aspect
-      const fit = () => {
-        const w = el.offsetWidth, h = el.offsetHeight;
-        renderer.setSize(w, h, false);
-        const ar = w / h;
-        // cover-fit uv transform (like background-size: cover)
-        if (ar > IMG_AR) uniforms.uCover.value.set(1, IMG_AR / ar, 0, (1 - IMG_AR / ar) / 2);
-        else             uniforms.uCover.value.set(ar / IMG_AR, 1, (1 - ar / IMG_AR) / 2, 0);
-      };
-      fit();
-      window.addEventListener('resize', fit);
-
-      const target = { x: 0.5, y: 0.5 };
-      const onMouse = (e: MouseEvent) => {
-        target.x = e.clientX / window.innerWidth;
-        target.y = 1 - e.clientY / window.innerHeight;
-      };
-      window.addEventListener('mousemove', onMouse, { passive: true });
-
-      let raf = 0;
-      let shown = false;
-      const tick = (t: number) => {
-        uniforms.uTime.value = t / 1000;
-        const m = uniforms.uMouse.value;
-        m.x += (target.x - m.x) * 0.045;
-        m.y += (target.y - m.y) * 0.045;
-        renderer.render(scene, camera);
-        if (!shown && uniforms.uImg.value.image && uniforms.uDepth.value.image) {
-          renderer.domElement.style.opacity = '1';
-          shown = true;
+    const start = () => {
+      if (started) return;
+      started = true;
+      import('three').then(THREE => {
+        if (disposed) return;
+        let renderer: InstanceType<typeof THREE.WebGLRenderer>;
+        try {
+          renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+        } catch {
+          return; // no WebGL — fallback image remains
         }
-        raf = requestAnimationFrame(tick);
-      };
-      raf = requestAnimationFrame(tick);
 
-      cleanup = () => {
-        cancelAnimationFrame(raf);
-        window.removeEventListener('resize', fit);
-        window.removeEventListener('mousemove', onMouse);
-        renderer.dispose();
-        el.removeChild(renderer.domElement);
-      };
-    });
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0, 1);
+        const loader = new THREE.TextureLoader();
+        // NOTE: the texture is deliberately NOT tagged SRGBColorSpace — this raw
+        // ShaderMaterial has no colorspace re-encode pass, so tagging it would
+        // linearize on sample and render ~30% darker than the CSS fallback.
+        const uniforms = {
+          uImg:   { value: loader.load(asset(img)) },
+          uDepth: { value: loader.load(asset(depth)) },
+          uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+          uTime:  { value: 0 },
+          uCover: { value: new THREE.Vector4(1, 1, 0, 0) }, // scale.xy, offset.xy
+          uShift: { value: new THREE.Vector2(shift, shift * 0.66) },
+        };
 
-    return () => { disposed = true; cleanup?.(); };
-  }, []);
+        const mat = new THREE.ShaderMaterial({
+          uniforms,
+          vertexShader: `
+            varying vec2 vUv;
+            void main() { vUv = uv; gl_Position = vec4(position.xy * 2.0, 0.0, 1.0); }`,
+          fragmentShader: `
+            uniform sampler2D uImg, uDepth;
+            uniform vec2 uMouse, uShift;
+            uniform float uTime;
+            uniform vec4 uCover;
+            varying vec2 vUv;
+            void main() {
+              vec2 uv = vUv * uCover.xy + uCover.zw;
+              float d = texture2D(uDepth, uv).r;
+              vec2 sway = vec2(sin(uTime * 0.22), cos(uTime * 0.17)) * 0.006;
+              vec2 off = (uMouse - 0.5) * uShift * d + sway * d;
+              gl_FragColor = texture2D(uImg, uv + off);
+            }`,
+        });
+        scene.add(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat));
+
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+        el.appendChild(renderer.domElement);
+        Object.assign(renderer.domElement.style, {
+          position: 'absolute', inset: '0', width: '100%', height: '100%',
+          opacity: '0', transition: 'opacity 1.2s ease',
+        });
+
+        const fit = () => {
+          const w = el.offsetWidth, h = el.offsetHeight;
+          renderer.setSize(w, h, false);
+          const arEl = w / h;
+          // cover-fit uv transform (like background-size: cover)
+          if (arEl > ar) uniforms.uCover.value.set(1, ar / arEl, 0, (1 - ar / arEl) / 2);
+          else           uniforms.uCover.value.set(arEl / ar, 1, (1 - arEl / ar) / 2, 0);
+        };
+        fit();
+        window.addEventListener('resize', fit);
+
+        const target = { x: 0.5, y: 0.5 };
+        const onMouse = (e: MouseEvent) => {
+          target.x = e.clientX / window.innerWidth;
+          target.y = 1 - e.clientY / window.innerHeight;
+        };
+        window.addEventListener('mousemove', onMouse, { passive: true });
+
+        let raf = 0;
+        let running = false;
+        let shown = false;
+        const tick = (t: number) => {
+          if (disposed || !inView) { running = false; return; } // resume() restarts
+          raf = requestAnimationFrame(tick);
+          uniforms.uTime.value = t / 1000;
+          const m = uniforms.uMouse.value;
+          m.x += (target.x - m.x) * 0.045;
+          m.y += (target.y - m.y) * 0.045;
+          renderer.render(scene, camera);
+          if (!shown && uniforms.uImg.value.image && uniforms.uDepth.value.image) {
+            renderer.domElement.style.opacity = '1';
+            shown = true;
+          }
+        };
+        resume = () => {
+          if (running || disposed) return;
+          running = true;
+          raf = requestAnimationFrame(tick);
+        };
+        if (inView) resume();
+
+        cleanup = () => {
+          cancelAnimationFrame(raf);
+          window.removeEventListener('resize', fit);
+          window.removeEventListener('mousemove', onMouse);
+          renderer.dispose();
+          if (renderer.domElement.parentNode === el) el.removeChild(renderer.domElement);
+        };
+      });
+    };
+
+    // build lazily, render only while (nearly) in view
+    const io = new IntersectionObserver(entries => {
+      inView = entries[entries.length - 1].isIntersecting;
+      if (inView) { start(); resume?.(); }
+    }, { rootMargin: '25% 0px' });
+    io.observe(el);
+
+    // honour a mid-session switch to reduced motion: drop the canvas,
+    // the static image below takes over
+    const onMql = () => {
+      if (mql.matches) { disposed = true; cleanup?.(); }
+    };
+    mql.addEventListener('change', onMql);
+
+    return () => {
+      disposed = true;
+      io.disconnect();
+      mql.removeEventListener('change', onMql);
+      cleanup?.();
+    };
+  }, [img, depth, ar, shift]);
 
   return <div ref={wrap} className="absolute inset-0" aria-hidden="true" />;
 }
@@ -1156,7 +1058,8 @@ function Atmosphere({ mode }: { mode: 'mist' | 'fireflies' }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mql.matches) return;
     const cv = ref.current;
     if (!cv) return;
     const ctx = cv.getContext('2d');
@@ -1180,7 +1083,13 @@ function Atmosphere({ mode }: { mode: 'mist' | 'fireflies' }) {
     const onResize = () => { w = cv.width = cv.offsetWidth; h = cv.height = cv.offsetHeight; };
     window.addEventListener('resize', onResize);
 
+    // paint only while the canvas is (nearly) in view — resumed by the observer
+    let inView = false;
+    let running = false;
+    let stopped = false;
+
     const tick = () => {
+      if (stopped || !inView) { running = false; return; }
       t += 0.008;
       ctx.clearRect(0, 0, w, h);
       for (const p of parts) {
@@ -1201,12 +1110,58 @@ function Atmosphere({ mode }: { mode: 'mist' | 'fireflies' }) {
       }
       raf = requestAnimationFrame(tick);
     };
-    tick();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); };
+    const resume = () => {
+      if (running || stopped) return;
+      running = true;
+      raf = requestAnimationFrame(tick);
+    };
+
+    const io = new IntersectionObserver(entries => {
+      inView = entries[entries.length - 1].isIntersecting;
+      if (inView) resume();
+    }, { rootMargin: '15% 0px' });
+    io.observe(cv);
+
+    // mid-session switch to reduced motion stops and clears the layer
+    const onMql = () => {
+      if (mql.matches) { stopped = true; ctx.clearRect(0, 0, w, h); }
+    };
+    mql.addEventListener('change', onMql);
+
+    return () => {
+      stopped = true;
+      cancelAnimationFrame(raf);
+      io.disconnect();
+      mql.removeEventListener('change', onMql);
+      window.removeEventListener('resize', onResize);
+    };
   }, [mode]);
 
   return <canvas ref={ref} className="absolute inset-0"
     style={{ width:'100%', height:'100%', pointerEvents:'none' }} aria-hidden="true" />;
+}
+
+// ── AMBIENT VIDEO — shows its poster instantly; the video file only
+// downloads (and plays) once the section nears the viewport, and it
+// pauses again while scrolled away.
+function AmbientVideo({ src, poster, style }: {
+  src: string; poster: string; style?: CSSProperties;
+}) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    const io = new IntersectionObserver(entries => {
+      if (entries[entries.length - 1].isIntersecting) v.play().catch(() => {});
+      else v.pause();
+    }, { threshold: 0.2 });
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <video ref={ref} src={asset(src)} poster={asset(poster)}
+      muted loop playsInline preload="none" style={style} />
+  );
 }
 
 // ── ROOM DETAIL SHEET ─────────────────────────────────────────
@@ -1579,7 +1534,7 @@ export default function Page() {
               style={{ position:'absolute', inset:0,
                 backgroundImage:`url('${asset('/gen/g-hero.webp')}')`,
                 backgroundSize:'cover', backgroundPosition:'center' }} />
-            <DepthHero />
+            <DepthImage img="/gen/g-hero.webp" depth="/gen/g-hero-depth.webp" ar={16 / 9} />
           </div>
         </motion.div>
 
@@ -1764,11 +1719,8 @@ export default function Page() {
           {/* Video */}
           <div className="reveal reveal-delay-1 relative">
             <div style={{ aspectRatio:'4/5', overflow:'hidden', background:C.deep }}>
-              <video
-                src={asset('/about-video.mp4')}
-                autoPlay muted loop playsInline
-                style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}
-              />
+              <AmbientVideo src="/about-video.mp4" poster="/about-poster.webp"
+                style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
             </div>
             {/* Year accent */}
             <div className="absolute -bottom-5 -left-5 hidden md:flex flex-col items-center justify-center"
@@ -2077,10 +2029,10 @@ export default function Page() {
         <div className="gallery-track" style={{ display:'flex', gap:'1rem', width:'max-content' }}>
           {(() => {
             const shots = [
-              '/summer1.webp', '/gen/g-river.webp', '/gen/g-jailoo.webp',
-              '/summer2.webp', '/gen/g-forest.webp', '/gen/g-hero.webp',
-              '/gen/xl-room-yurt.webp', '/summer3.webp', '/gen/g-night.webp',
-              '/summer4.webp', '/gen/g-berries.webp',
+              '/gen/xl-summer-ext.webp', '/gen/g-river.webp', '/gen/g-jailoo.webp',
+              '/gen/xl-summer-ter.webp', '/gen/g-forest.webp', '/gen/g-hero.webp',
+              '/gen/xl-room-yurt.webp', '/gen/xl-summer-int.webp', '/gen/g-night.webp',
+              '/gen/xl-summer-dsk.webp', '/gen/g-berries.webp',
             ];
             return [...shots, ...shots].map((src, i) => (
               <img key={i} src={asset(src)} alt="" loading="lazy"
@@ -2212,7 +2164,17 @@ export default function Page() {
       ════════════════════════════════════════ */}
       <section style={{ position:'relative', padding:'8rem 1.5rem',
         textAlign:'center', overflow:'hidden', background:C.deep }}>
-        <NightScene />
+        {/* night photograph — a real yurt glowing under the Milky Way */}
+        <div className="absolute inset-0" aria-hidden="true">
+          <div style={{ position:'absolute', inset:0,
+            backgroundImage:`url('${asset('/gen/g-yurt-night.webp')}')`,
+            backgroundSize:'cover', backgroundPosition:'center' }} />
+          <DepthImage img="/gen/g-yurt-night.webp" depth="/gen/g-yurt-night-depth.webp"
+            ar={2048 / 900} shift={0.026} />
+          {/* readability scrim over the photo */}
+          <div style={{ position:'absolute', inset:0,
+            background:'linear-gradient(to bottom, rgba(8,19,12,0.62), rgba(8,19,12,0.3) 42%, rgba(8,19,12,0.78))' }} />
+        </div>
         <Atmosphere mode="fireflies" />
 
         <div className="relative z-10 max-w-2xl mx-auto">

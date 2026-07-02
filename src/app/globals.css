@@ -193,16 +193,6 @@
   transform: scale(1);
 }
 
-/* ── Star twinkle (CTA night scene) ── */
-@keyframes twinkle {
-  0%, 100% { opacity: 0.12; }
-  50%      { opacity: 0.75; }
-}
-.star { animation: twinkle 3.6s ease-in-out infinite; }
-.star:nth-child(3n) { animation-delay: 1.3s; }
-.star:nth-child(5n) { animation-delay: 2.4s; animation-duration: 4.6s; }
-.star:nth-child(7n) { animation-delay: 0.7s; }
-
 /* ── Gallery film strip ── */
 .gallery-track {
   animation: marquee 55s linear infinite;
@@ -222,7 +212,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-bg, .fade-up, .reveal, .marquee-track, .gallery-track, .route-draw, .star {
+  .hero-bg, .fade-up, .reveal, .marquee-track, .gallery-track, .route-draw {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
